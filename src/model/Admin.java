@@ -1,123 +1,113 @@
-package model;
+package com.sportconnect.model;
 
-import enums.SkillLevel;
+import java.time.LocalDateTime;
 
-public class Admin extends Player {          // Inheritance
+public class Admin {
 
-    // ── Encapsulation ─────────────────────────────────────────────────────────
-    private int adminLevel;
+    private Long          adminId;
+    private String        username;
+    private String        password;
+    private String        email;
+    private String        fullName;
+    private String        role;          // "SUPER_ADMIN" | "ADMIN" | "MODERATOR"
+    private boolean       active;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastLoginAt;
+    private LocalDateTime updatedAt;
 
-    // ── Constructor ───────────────────────────────────────────────────────────
-    public Admin(String playerID, String username, String password,
-            String fullName, String sport, SkillLevel skillLevel,
-            String city, String availability, int adminLevel) {
-        super(playerID, username, password, fullName, sport, skillLevel, city, availability);
-        this.adminLevel = adminLevel;
+    // ── Constructors ──────────────────────────────────────────────────────────
+
+    public Admin() {
+        this.active    = true;
+        this.role      = "ADMIN";
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
-    // ── Getter ────────────────────────────────────────────────────────────────
-    public int getAdminLevel() {
-        return adminLevel;
+    public Admin(String username, String password, String email) {
+        this();
+        this.username = username;
+        this.password = password;
+        this.email    = email;
     }
 
-    // ── Polymorphism: overrides Player.getRole() ──────────────────────────────
-    @Override
-    public String getRole() {
-        return "ADMIN";
+    public Admin(Long adminId, String username, String password,
+                 String email, String fullName) {
+        this();
+        this.adminId  = adminId;
+        this.username = username;
+        this.password = password;
+        this.email    = email;
+        this.fullName = fullName;
     }
 
-    // ── Cancel a session with refund logic ────────────────────────────────────
-    public void cancelSession(String sessionID, GameSession[] sessionList, int sessionCount,
-            Payment[] paymentList, int paymentCount) {
-        GameSession target = null;
-        for (int i = 0; i < sessionCount; i++) {
-            if (sessionList[i].getSessionID().equals(sessionID)) {
-                target = sessionList[i];
-                break;
-            }
-        }
-        if (target == null) {
-            System.out.println("Session not found.");
-            return;
-        }
-
-        boolean refundEligible = isRefundEligible(target.getDate().toString());
-        target.cancel();
-        System.out.println("Session " + sessionID + " cancelled.");
-
-        if (refundEligible) {
-            processRefund(sessionID, paymentList, paymentCount);
-        } else {
-            System.out.println("Cancellation less than 24 hours before session. No refund issued.");
-        }
+    public Admin(Long adminId, String username, String password,
+                 String email, String fullName, String role) {
+        this(adminId, username, password, email, fullName);
+        this.role = role;
     }
 
-    // ── Check if cancellation is 24+ hours before session ────────────────────
-    private boolean isRefundEligible(String sessionDate) {
-        try {
-            String[] parts = sessionDate.split("-");
-            int sessionYear = Integer.parseInt(parts[0]);
-            int sessionMonth = Integer.parseInt(parts[1]);
-            int sessionDay = Integer.parseInt(parts[2]);
-            long nowMillis = System.currentTimeMillis();
-            long sessionMillis = dateToMillis(sessionYear, sessionMonth, sessionDay);
-            long diffHours = (sessionMillis - nowMillis) / (1000 * 60 * 60);
-            return diffHours >= 24;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+    // ── Getters & Setters ─────────────────────────────────────────────────────
 
-    // ── Convert date to milliseconds (no imports) ─────────────────────────────
-    private long dateToMillis(int year, int month, int day) {
-        int[] daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-        long days = 0;
-        for (int y = 1970; y < year; y++) {
-            days += (y % 4 == 0) ? 366 : 365;
-        }
-        for (int m = 1; m < month; m++) {
-            days += daysInMonth[m - 1];
-            if (m == 2 && year % 4 == 0) {
-                days++;
-            }
-        }
-        days += day - 1;
-        return days * 24 * 60 * 60 * 1000L;
-    }
+    public Long   getAdminId()               { return adminId; }
+    public void   setAdminId(Long v)         { this.adminId = v; }
 
-    // ── Process refunds for all payments in a session ─────────────────────────
-    public void processRefund(String sessionID, Payment[] paymentList, int paymentCount) {
-        boolean anyRefund = false;
-        for (int i = 0; i < paymentCount; i++) {
-            if (paymentList[i].getSessionID().equals(sessionID)
-                    && paymentList[i].getStatus() == enums.PaymentStatus.PAID) {
-                paymentList[i].refund();
-                System.out.println("Refund issued: $" + paymentList[i].getAmount()
-                        + " to playerID " + paymentList[i].getPlayerID());
-                anyRefund = true;
-            }
-        }
-        if (!anyRefund) {
-            System.out.println("No paid payments found for session " + sessionID + ".");
+    public String getUsername()              { return username; }
+    public void   setUsername(String v)      { this.username = v; }
+
+    public String getPassword()              { return password; }
+    public void   setPassword(String v)      { this.password = v; }
+
+    public String getEmail()                 { return email; }
+    public void   setEmail(String v)         { this.email = v; }
+
+    public String getFullName()              { return fullName; }
+    public void   setFullName(String v)      { this.fullName = v; }
+
+    public String getRole()                  { return role; }
+    public void   setRole(String v)          { this.role = v; }
+
+    public boolean       isActive()          { return active; }
+    public void          setActive(boolean v){ this.active = v; }
+
+    public LocalDateTime getCreatedAt()      { return createdAt; }
+    public void          setCreatedAt(LocalDateTime v) { this.createdAt = v; }
+
+    public LocalDateTime getLastLoginAt()    { return lastLoginAt; }
+    public void          setLastLoginAt(LocalDateTime v){ this.lastLoginAt = v; }
+
+    public LocalDateTime getUpdatedAt()      { return updatedAt; }
+    public void          setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
+
+    // ── Business methods ──────────────────────────────────────────────────────
+
+    public boolean hasPermission(String permission) {
+        if (!active) return false;
+        switch (role.toUpperCase()) {
+            case "SUPER_ADMIN": return true;
+            case "ADMIN":
+                return !permission.equals("DELETE_ADMIN")
+                    && !permission.equals("MANAGE_SYSTEM_SETTINGS");
+            case "MODERATOR":
+                return permission.equals("VIEW_PLAYERS")
+                    || permission.equals("VIEW_EVENTS")
+                    || permission.equals("MANAGE_EVENTS");
+            default: return false;
         }
     }
 
-    // ── View all registered users ─────────────────────────────────────────────
-    public void viewAllUsers(Player[] playerList, int playerCount) {
-        if (playerCount == 0) {
-            System.out.println("No users registered yet.");
-            return;
-        }
-        System.out.println("\n--- All Registered Users (" + playerCount + ") ---");
-        for (int i = 0; i < playerCount; i++) {
-            System.out.println((i + 1) + ". [" + playerList[i].getRole() + "] "
-                    + playerList[i].toString());
-        }
+    public boolean isSuperAdmin() {
+        return "SUPER_ADMIN".equalsIgnoreCase(role);
     }
 
-    // ── toString ──────────────────────────────────────────────────────────────
+    public void updateLastLogin() {
+        this.lastLoginAt = LocalDateTime.now();
+    }
+
     @Override
     public String toString() {
-        return "[ADMIN Lvl " + adminLevel + "] " + super.toString();
+        return String.format(
+            "Admin { id=%d, username='%s', email='%s', role='%s', active=%b }",
+            adminId, username, email, role, active);
     }
 }
