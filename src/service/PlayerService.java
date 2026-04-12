@@ -1,194 +1,158 @@
-package service;
+package com.sportconnect.service;
 
-import model.Player;
-import model.Admin;
-import model.FriendRequest;
-import enums.SkillLevel;
-import enums.RequestStatus;
+import com.sportconnect.model.Player;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PlayerService {
 
-    // ── Encapsulation ─────────────────────────────────────────────────────────
-    private Player[] playerList;
-    private int playerCount;
+    private final Map<Long, Player> playerRepo = new HashMap<>();
+    private Long idCounter = 1L;
 
-    // ── Constructor ───────────────────────────────────────────────────────────
-    public PlayerService(Player[] playerList, int initialCount) {
-        this.playerList = playerList;
-        this.playerCount = initialCount;
+    // ── Create ────────────────────────────────────────────────────────────────
+
+    public Player addPlayer(Player player) {
+        if (player == null)
+            throw new IllegalArgumentException("Player cannot be null");
+        if (player.getName() == null || player.getName().trim().isEmpty())
+            throw new IllegalArgumentException("Player name cannot be empty");
+        if (player.getEmail() == null || player.getEmail().trim().isEmpty())
+            throw new IllegalArgumentException("Player email cannot be empty");
+        if (playerExistsByEmail(player.getEmail()))
+            throw new IllegalArgumentException("Email already registered: " + player.getEmail());
+
+        player.setPlayerId(idCounter++);
+        player.setCreatedAt(LocalDateTime.now());
+        player.setUpdatedAt(LocalDateTime.now());
+        playerRepo.put(player.getPlayerId(), player);
+        return player;
     }
 
-    // ── Getters ───────────────────────────────────────────────────────────────
-    public int getPlayerCount() {
-        return playerCount;
+    // ── Read ──────────────────────────────────────────────────────────────────
+
+    public List<Player> getAllPlayers() {
+        return new ArrayList<>(playerRepo.values());
     }
 
-    // ── Sign up ───────────────────────────────────────────────────────────────
-    public Player signUp(String playerID, String username, String password,
-            String fullName, String sport, SkillLevel skillLevel,
-            String city, String availability) {
-
-        for (int i = 0; i < playerCount; i++) {
-            if (playerList[i].getUsername().equalsIgnoreCase(username)) {
-                System.out.println("Username '" + username + "' is already taken.");
-                return null;
-            }
-        }
-
-        Player newPlayer;
-        if (username.equalsIgnoreCase("admin")) {
-            newPlayer = new Admin(playerID, username, password,
-                    fullName, sport, skillLevel,
-                    city, availability, 1);
-        } else {
-            newPlayer = new Player(playerID, username, password,
-                    fullName, sport, skillLevel,
-                    city, availability);
-        }
-
-        playerList[playerCount++] = newPlayer;
-        System.out.println("Sign up successful! Welcome, " + fullName + ".");
-        return newPlayer;
+    public List<Player> getAllActivePlayers() {
+        return playerRepo.values().stream()
+                .filter(Player::isActive)
+                .collect(Collectors.toList());
     }
 
-    // ── Login ─────────────────────────────────────────────────────────────────
-    public Player login(String username, String password) {
-        for (int i = 0; i < playerCount; i++) {
-            if (playerList[i].getUsername().equalsIgnoreCase(username)
-                    && playerList[i].getPassword().equals(password)) {
-                System.out.println("Login successful! Hello, " + playerList[i].getFullName() + ".");
-                return playerList[i];
-            }
-        }
-        System.out.println("Invalid username or password. Please try again.");
-        return null;
+    public Player getPlayerById(Long id) {
+        if (id == null || id <= 0)
+            throw new IllegalArgumentException("Invalid player ID");
+        Player p = playerRepo.get(id);
+        if (p == null)
+            throw new NoSuchElementException("Player not found: ID " + id);
+        return p;
     }
 
-    // ── Search players by sport and skill level ───────────────────────────────
-    public Player[] searchPlayers(String sport, SkillLevel skillLevel) {
-        Player[] results = new Player[playerCount];
-        int count = 0;
-
-        for (int i = 0; i < playerCount; i++) {
-            boolean sportMatch = playerList[i].getSport().equalsIgnoreCase(sport);
-            boolean skillMatch = skillLevel == null
-                    || playerList[i].getSkillLevel() == skillLevel;
-            if (sportMatch && skillMatch) {
-                results[count++] = playerList[i];
-            }
-        }
-
-        if (count == 0) {
-            System.out.println("No players found for " + sport + " | " + skillLevel);
-            return new Player[0];
-        }
-
-        Player[] trimmed = new Player[count];
-        for (int i = 0; i < count; i++) {
-            trimmed[i] = results[i];
-        }
-
-        System.out.println("Players found (" + count + "):");
-        for (int i = 0; i < count; i++) {
-            System.out.println((i + 1) + ". " + trimmed[i]);
-        }
-        return trimmed;
+    public Player getPlayerByEmail(String email) {
+        if (email == null || email.trim().isEmpty())
+            throw new IllegalArgumentException("Email cannot be empty");
+        return playerRepo.values().stream()
+                .filter(p -> email.equalsIgnoreCase(p.getEmail()))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Player not found: " + email));
     }
 
-    // ── Find by username ──────────────────────────────────────────────────────
-    public Player findByUsername(String username) {
-        for (int i = 0; i < playerCount; i++) {
-            if (playerList[i].getUsername().equalsIgnoreCase(username)) {
-                return playerList[i];
-            }
-        }
-        return null;
+    public List<Player> getPlayersBySport(String sport) {
+        if (sport == null || sport.trim().isEmpty())
+            throw new IllegalArgumentException("Sport cannot be empty");
+        return playerRepo.values().stream()
+                .filter(p -> sport.equalsIgnoreCase(p.getSport()) && p.isActive())
+                .collect(Collectors.toList());
     }
 
-    // ── Find by playerID ──────────────────────────────────────────────────────
-    public Player findByID(String playerID) {
-        for (int i = 0; i < playerCount; i++) {
-            if (playerList[i].getPlayerID().equals(playerID)) {
-                return playerList[i];
-            }
-        }
-        return null;
+    public List<Player> getPlayersBySkillLevel(String skillLevel) {
+        if (skillLevel == null || skillLevel.trim().isEmpty())
+            throw new IllegalArgumentException("Skill level cannot be empty");
+        return playerRepo.values().stream()
+                .filter(p -> skillLevel.equalsIgnoreCase(p.getSkill_level()) && p.isActive())
+                .collect(Collectors.toList());
     }
 
-    // ── Send friend request ───────────────────────────────────────────────────
-    public FriendRequest sendFriendRequest(String fromID, String toID,
-            FriendRequest[] requestList,
-            int requestCount) {
-        for (int i = 0; i < requestCount; i++) {
-            FriendRequest r = requestList[i];
-            boolean sameCouple = (r.getFromPlayerID().equals(fromID) && r.getToPlayerID().equals(toID))
-                    || (r.getFromPlayerID().equals(toID) && r.getToPlayerID().equals(fromID));
-            if (sameCouple && (r.getStatus() == RequestStatus.PENDING
-                    || r.getStatus() == RequestStatus.ACCEPTED)) {
-                System.out.println("Request already sent or already friends.");
-                return null;
-            }
-        }
-
-        Player target = findByID(toID);
-        if (target == null) {
-            System.out.println("Player not found.");
-            return null;
-        }
-
-        String reqID = "REQ" + (requestCount + 1);
-        FriendRequest req = new FriendRequest(reqID, fromID, toID, getTodayString());
-        System.out.println("Friend request sent to " + target.getFullName() + "!");
-        return req;
+    public List<Player> getPlayersByCity(String city) {
+        if (city == null || city.trim().isEmpty())
+            throw new IllegalArgumentException("City cannot be empty");
+        return playerRepo.values().stream()
+                .filter(p -> city.equalsIgnoreCase(p.getCity()) && p.isActive())
+                .collect(Collectors.toList());
     }
 
-    // ── Check if two players are friends ─────────────────────────────────────
-    public boolean areFriends(String playerID1, String playerID2,
-            FriendRequest[] requestList, int requestCount) {
-        for (int i = 0; i < requestCount; i++) {
-            FriendRequest r = requestList[i];
-            boolean sameCouple = (r.getFromPlayerID().equals(playerID1)
-                    && r.getToPlayerID().equals(playerID2))
-                    || (r.getFromPlayerID().equals(playerID2)
-                    && r.getToPlayerID().equals(playerID1));
-            if (sameCouple && r.getStatus() == RequestStatus.ACCEPTED) {
-                return true;
-            }
-        }
-        return false;
+    // ── Update ────────────────────────────────────────────────────────────────
+
+    public Player updatePlayer(Long id, Player updated) {
+        if (id == null || id <= 0)
+            throw new IllegalArgumentException("Invalid player ID");
+        if (updated == null)
+            throw new IllegalArgumentException("Updated player data cannot be null");
+
+        Player existing = playerRepo.get(id);
+        if (existing == null)
+            throw new NoSuchElementException("Player not found: ID " + id);
+
+        if (isSet(updated.getName()))        existing.setName(updated.getName());
+        if (isSet(updated.getEmail()))       existing.setEmail(updated.getEmail());
+        if (isSet(updated.getPhone()))       existing.setPhone(updated.getPhone());
+        if (isSet(updated.getSport()))       existing.setSport(updated.getSport());
+        if (updated.getAge() > 0)            existing.setAge(updated.getAge());
+        if (isSet(updated.getPosition()))    existing.setPosition(updated.getPosition());
+        if (updated.getExperience() >= 0)    existing.setExperience(updated.getExperience());
+        if (isSet(updated.getSkill_level())) existing.setSkill_level(updated.getSkill_level());
+        if (isSet(updated.getCity()))        existing.setCity(updated.getCity());
+        if (isSet(updated.getState()))       existing.setState(updated.getState());
+        if (isSet(updated.getCountry()))     existing.setCountry(updated.getCountry());
+        if (isSet(updated.getBio()))         existing.setBio(updated.getBio());
+        if (isSet(updated.getAvailability())) existing.setAvailability(updated.getAvailability());
+
+        existing.setUpdatedAt(LocalDateTime.now());
+        return existing;
     }
 
-    // ── Today string helper (no imports) ──────────────────────────────────────
-    private String getTodayString() {
-        long millis = System.currentTimeMillis();
-        long totalDays = millis / (1000L * 60 * 60 * 24);
-        int[] dim = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-        int year = 1970;
-        long remaining = totalDays;
+    // ── Delete / Activate ─────────────────────────────────────────────────────
 
-        while (true) {
-            int diy = (year % 4 == 0) ? 366 : 365;
-            if (remaining < diy) {
-                break;
-            }
-            remaining -= diy;
-            year++;
-        }
+    public void deactivatePlayer(Long id) {
+        Player p = getPlayerById(id);
+        p.setActive(false);
+        p.setUpdatedAt(LocalDateTime.now());
+    }
 
-        int month = 0;
-        while (month < 12) {
-            int d = dim[month];
-            if (month == 1 && year % 4 == 0) {
-                d = 29;
-            }
-            if (remaining < d) {
-                break;
-            }
-            remaining -= d;
-            month++;
-        }
+    public void activatePlayer(Long id) {
+        Player p = getPlayerById(id);
+        p.setActive(true);
+        p.setUpdatedAt(LocalDateTime.now());
+    }
 
-        int day = (int) remaining + 1;
-        return year + "-" + String.format("%02d", month + 1) + "-" + String.format("%02d", day);
+    public void deletePlayer(Long id) {
+        if (!playerRepo.containsKey(id))
+            throw new NoSuchElementException("Player not found: ID " + id);
+        playerRepo.remove(id);
+    }
+
+    // ── Stats ─────────────────────────────────────────────────────────────────
+
+    public int getTotalPlayers()       { return playerRepo.size(); }
+    public int getTotalActivePlayers() {
+        return (int) playerRepo.values().stream().filter(Player::isActive).count();
+    }
+
+    public boolean playerExistsByEmail(String email) {
+        return playerRepo.values().stream()
+                .anyMatch(p -> email.equalsIgnoreCase(p.getEmail()));
+    }
+
+    public void clearAllPlayers() {
+        playerRepo.clear();
+        idCounter = 1L;
+    }
+
+    // ── Private helpers ───────────────────────────────────────────────────────
+
+    private boolean isSet(String s) {
+        return s != null && !s.trim().isEmpty();
     }
 }
