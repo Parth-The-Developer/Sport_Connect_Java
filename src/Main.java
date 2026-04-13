@@ -57,25 +57,27 @@ public class Main {
                 System.out.println("  Logged in as: " + loggedInPlayer.getDisplayName());
                 System.out.println();
                 System.out.println("  1. View My Profile");
-                System.out.println("  2. Search Players by Sport");
-                System.out.println("  3. Search Players by Skill Level");
-                System.out.println("  4. Search Players by City");
+                System.out.println("  2. Update My Profile");
+                System.out.println("  3. Search Players by Sport");
+                System.out.println("  4. Search Players by Skill Level");
+                System.out.println("  5. Search Players by City");
                 System.out.println("  ─────────────────────────────────────");
-                System.out.println("  5. Friend Requests     [Parth - Week 2]");
-                System.out.println("  6. Chat                [Parth - Week 2]");
-                System.out.println("  7. Join / Schedule Game[Kelvin - Week 2]");
-                System.out.println("  8. Ratings & Payments  [Dhruv - Week 3]");
+                System.out.println("  6. Friend Requests     [Parth - Week 2]");
+                System.out.println("  7. Chat                [Parth - Week 2]");
+                System.out.println("  8. Join / Schedule Game[Kelvin - Week 2]");
+                System.out.println("  9. Ratings & Payments  [Dhruv - Week 3]");
                 System.out.println("  ─────────────────────────────────────");
                 System.out.println("  0. Log Out");
                 System.out.print("\n  Choice: ");
                 switch (readInt()) {
                     case 1 -> viewMyProfile();
-                    case 2 -> searchBySport();
-                    case 3 -> searchBySkill();
-                    case 4 -> searchByCity();
-                    case 5, 6 -> stub("Parth's module — coming Week 2");
-                    case 7    -> stub("Kelvin's module — coming Week 2");
-                    case 8    -> stub("Dhruv's module — coming Week 3");
+                    case 2 -> updateMyProfile();
+                    case 3 -> searchBySport();
+                    case 4 -> searchBySkill();
+                    case 5 -> searchByCity();
+                    case 6, 7 -> stub("Parth's module — coming Week 2");
+                    case 8    -> stub("Kelvin's module — coming Week 2");
+                    case 9    -> stub("Dhruv's module — coming Week 3");
                     case 0    -> { playerLogout(); return; }
                     default   -> warn("Invalid option.");
                 }
@@ -143,6 +145,38 @@ public class Main {
         System.out.printf("  Rating      : %.1f%n",   p.getRating());
         System.out.printf("  Member since: %s%n",     p.getCreatedAt().toLocalDate());
         pause();
+    }
+
+    static void updateMyProfile() {
+        printHeader("Update My Profile");
+        Player p = loggedInPlayer;
+        try {
+            System.out.print("  New Phone (Enter to skip)    : ");
+            String phone = sc.nextLine().trim();
+            if (!phone.isEmpty()) p.setPhone(phone);
+
+            System.out.print("  New City (Enter to skip)     : ");
+            String city = sc.nextLine().trim();
+            if (!city.isEmpty()) p.setCity(city);
+
+            System.out.print("  New Sport (Enter to skip)    : ");
+            String sport = sc.nextLine().trim();
+            if (!sport.isEmpty()) p.setSport(sport);
+
+            System.out.print("  New Skill Level (Enter to skip)\n"
+                           + "  (BEGINNER / INTERMEDIATE / ADVANCED): ");
+            String skill = sc.nextLine().trim();
+            if (!skill.isEmpty()) p.setSkill_level(skill.toUpperCase());
+
+            System.out.print("  New Bio (Enter to skip)      : ");
+            String bio = sc.nextLine().trim();
+            if (!bio.isEmpty()) p.setBio(bio);
+
+            playerService.updatePlayer(p.getPlayerId(), p);
+            ok("Profile updated successfully!");
+        } catch (Exception e) {
+            warn("Update failed: " + e.getMessage());
+        }
     }
 
     static void searchBySport() {
