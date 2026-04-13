@@ -371,6 +371,9 @@ public class Main {
     authService.registerAdmin("admin", "admin123",
                               "admin@sportconnect.com", "System Admin");
 
+    authService.registerSuperAdmin("superadmin", "super123",
+                               "super@sportconnect.com", "Super Admin");
+
         // Demo players so search works immediately
     addDemo("Lien Tran",     "lien@demo.com",   "647-111-2222",
         "Cricket",    "BEGINNER",     "Toronto",     21, 2);

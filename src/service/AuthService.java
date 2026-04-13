@@ -109,6 +109,15 @@ public class AuthService {
         return p;
     }
 
+    public Admin registerSuperAdmin(String username, String password,
+                                String email, String fullName) {
+    validateCredentials(username, password, email);
+    Admin admin = new Admin(adminIdCounter++, username, password, 
+                            email, fullName, 2); // 2 = super admin
+    adminRepo.put(username.toLowerCase(), admin);
+    return admin;
+}
+
     public List<Admin>  getAllAdmins()  { return new ArrayList<>(adminRepo.values()); }
     public List<Player> getAllPlayers() { return new ArrayList<>(playerRepo.values()); }
 
