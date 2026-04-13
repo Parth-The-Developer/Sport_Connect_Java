@@ -121,7 +121,7 @@ public class AuthService {
     public List<Admin>  getAllAdmins()  { return new ArrayList<>(adminRepo.values()); }
     public List<Player> getAllPlayers() { return new ArrayList<>(playerRepo.values()); }
 
-    public boolean adminExists(String username) {
+    public boolean adminExists(String username) { 
         return adminRepo.containsKey(username.toLowerCase());
     }
     public boolean playerExists(String email) {
