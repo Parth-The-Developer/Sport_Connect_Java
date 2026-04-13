@@ -1,4 +1,4 @@
-
+package model;
 public class SportCategory {
 
     private String categoryID;

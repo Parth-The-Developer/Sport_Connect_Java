@@ -1,7 +1,9 @@
+package model;
+
+import java.time.LocalDateTime;
 
 public class Player {
 
-<<<<<<< HEAD
     private Long          playerId;
     private String        name;
     private String        email;
@@ -29,51 +31,45 @@ public class Player {
         this.rating    = 0.0;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
-=======
-    // ── Enum (lives here) ─────────────────────────────────────────────────────
-    public enum SkillLevel {
-        BEGINNER, INTERMEDIATE, ADVANCED
->>>>>>> d5cab6539fd42dc1fbb2f072264ac450bcfb389a
     }
 
-    // ── Fields ────────────────────────────────────────────────────────────────
-    protected String playerID;
-    protected String username;
-    protected String password;
-    protected String fullName;
-    protected String sport;
-    protected SkillLevel skillLevel;
-    protected String city;
-    protected String availability;
-    protected double averageRating;
-
-    // ── Constructor ───────────────────────────────────────────────────────────
-    public Player(String playerID, String username, String password,
-            String fullName, String sport, SkillLevel skillLevel,
-            String city, String availability) {
+    public Player(String name, String email, String phone,
+                  String sport, int experience) {
+        this();
+        this.name       = name;
+        this.email      = email;
+        this.phone      = phone;
+        this.sport      = sport;
+        this.experience = experience;
     }
 
-    // ── Getters / Setters ─────────────────────────────────────────────────────
-    public String getPlayerID() {
-        return playerID;
+    public Player(Long playerId, String name, String email, String phone,
+                  String sport, String skill_level, String position,
+                  int experience, int age,
+                  String city, String state, String country) {
+        this();
+        this.playerId    = playerId;
+        this.name        = name;
+        this.email       = email;
+        this.phone       = phone;
+        this.sport       = sport;
+        this.skill_level = skill_level;
+        this.position    = position;
+        this.experience  = experience;
+        this.age         = age;
+        this.city        = city;
+        this.state       = state;
+        this.country     = country;
     }
 
-<<<<<<< HEAD
     // ── Role — overridden by Admin ────────────────────────────────────────────
 
     public String getRole() {
         return "PLAYER";
-=======
-    public String getUsername() {
-        return username;
->>>>>>> d5cab6539fd42dc1fbb2f072264ac450bcfb389a
     }
 
-    public String getPassword() {
-        return password;
-    }
+    // ── Getters & Setters ─────────────────────────────────────────────────────
 
-<<<<<<< HEAD
     public Long   getPlayerId()             { return playerId; }
     public void   setPlayerId(Long v)       { this.playerId = v; }
 
@@ -137,41 +133,12 @@ public class Player {
 
     public String getDisplayName() {
         return name != null ? name : "Player#" + playerId;
-=======
-    public String getFullName() {
-        return fullName;
-    }
-
-    public String getSport() {
-        return sport;
-    }
-
-    public SkillLevel getSkillLevel() {
-        return skillLevel;
-    }
-
-    public String getCity() {
-        return city;
-    }
-
-    public String getAvailability() {
-        return availability;
-    }
-
-    public double getAverageRating() {
-        return averageRating;
-    }
-
-    public void setAverageRating(double r) {
-    }
-
-    // ── Methods ───────────────────────────────────────────────────────────────
-    public void updateProfile(String newCity, String newAvailability) {
->>>>>>> d5cab6539fd42dc1fbb2f072264ac450bcfb389a
     }
 
     @Override
     public String toString() {
-        return "";
+        return String.format(
+            "[%s] id=%-3d  %-20s  sport=%-12s  skill=%-14s  city=%s",
+            getRole(), playerId, name, sport, skill_level, city);
     }
 }

@@ -1,4 +1,4 @@
-
+package model;
 public class Rating {
 
     private String ratingID;

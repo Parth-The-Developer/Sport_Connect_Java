@@ -1,14 +1,14 @@
+package model;
+
+import enums.PaymentStatus;
 
 public class Payment {
-
     // ── Enums (live here) ─────────────────────────────────────────────────────
     public enum PaymentMethod {
         CARD, PAYPAL
     }
 
-    public enum PaymentStatus {
-        PAID, REFUNDED
-    }
+    // PaymentStatus removed - using enums.PaymentStatus instead
 
     // ── Fields ────────────────────────────────────────────────────────────────
     private String paymentID;
@@ -17,11 +17,6 @@ public class Payment {
     private double amount;
     private PaymentMethod method;
     private PaymentStatus status;
-
-    // ── Constructor ───────────────────────────────────────────────────────────
-    public Payment(String paymentID, String playerID, String sessionID,
-            double amount, PaymentMethod method) {
-    }
 
     // ── Getters ───────────────────────────────────────────────────────────────
     public String getPaymentID() {
