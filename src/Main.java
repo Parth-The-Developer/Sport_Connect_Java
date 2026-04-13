@@ -491,7 +491,7 @@ public class Main {
             System.out.println("  -- PROFILE ----------------------------------------");
             System.out.println("    1.  Update Profile");
             System.out.println("  -- DISCOVER ----------------------------------------");
-            System.out.println("    2.  Search Players");
+            System.out.println("    2.  Search Player");
             System.out.println("  -- SOCIAL ------------------------------------------");
             System.out.println("    3.  Send Friend Request");
             System.out.println("    4.  View Incoming Requests");
@@ -556,7 +556,7 @@ public class Main {
             System.out.println("                   ADMIN PANEL                      ");
             System.out.printf("  Logged in as: %-35s%n", currentPlayer.getFullName());
             System.out.println("  ==================================================");
-            System.out.println("    1.  View All Users");
+            System.out.println("    1.  View All User");
             System.out.println("    2.  Cancel Session");
             System.out.println("  ==================================================");
             System.out.println("    3.  Logout");
@@ -760,11 +760,11 @@ public class Main {
     }
 
     static void scheduleGame() {
-        
+
     }
 
     static void markSessionCompleted() {
-   
+
     }
 
     static void ratePlayer() {
