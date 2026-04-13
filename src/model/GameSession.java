@@ -1,10 +1,14 @@
-package model;
 
-import enums.SessionStatus;
 import java.time.LocalDate;
 
 public class GameSession {
 
+    // ── Enum (lives here) ─────────────────────────────────────────────────────
+    public enum SessionStatus {
+        SCHEDULED, COMPLETED, CANCELLED
+    }
+
+    // ── Fields ────────────────────────────────────────────────────────────────
     private String sessionID;
     private String teamID;
     private LocalDate date;
@@ -12,15 +16,12 @@ public class GameSession {
     private String venue;
     private SessionStatus status;
 
-    public GameSession(String sessionID, String teamID, String dateStr, String time, String venue) {
-        this.sessionID = sessionID;
-        this.teamID = teamID;
-        this.date = LocalDate.parse(dateStr);
-        this.time = time;
-        this.venue = venue;
-        this.status = SessionStatus.SCHEDULED;
+    // ── Constructor ───────────────────────────────────────────────────────────
+    public GameSession(String sessionID, String teamID, LocalDate date,
+            String time, String venue) {
     }
 
+    // ── Getters ───────────────────────────────────────────────────────────────
     public String getSessionID() {
         return sessionID;
     }
@@ -45,16 +46,15 @@ public class GameSession {
         return status;
     }
 
+    // ── Methods ───────────────────────────────────────────────────────────────
     public void markCompleted() {
-        this.status = SessionStatus.COMPLETED;
     }
 
     public void cancel() {
-        this.status = SessionStatus.CANCELLED;
     }
 
     @Override
     public String toString() {
-        return sessionID + " | " + date + " " + time + " @ " + venue + " [" + status + "]";
+        return "";
     }
 }

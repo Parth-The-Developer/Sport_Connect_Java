@@ -1,10 +1,16 @@
-package model;
-
-import enums.PaymentMethod;
-import enums.PaymentStatus;
 
 public class Payment {
 
+    // ── Enums (live here) ─────────────────────────────────────────────────────
+    public enum PaymentMethod {
+        CARD, PAYPAL
+    }
+
+    public enum PaymentStatus {
+        PAID, REFUNDED
+    }
+
+    // ── Fields ────────────────────────────────────────────────────────────────
     private String paymentID;
     private String playerID;
     private String sessionID;
@@ -12,16 +18,12 @@ public class Payment {
     private PaymentMethod method;
     private PaymentStatus status;
 
+    // ── Constructor ───────────────────────────────────────────────────────────
     public Payment(String paymentID, String playerID, String sessionID,
             double amount, PaymentMethod method) {
-        this.paymentID = paymentID;
-        this.playerID = playerID;
-        this.sessionID = sessionID;
-        this.amount = amount;
-        this.method = method;
-        this.status = PaymentStatus.PAID;
     }
 
+    // ── Getters ───────────────────────────────────────────────────────────────
     public String getPaymentID() {
         return paymentID;
     }
@@ -46,16 +48,15 @@ public class Payment {
         return status;
     }
 
+    // ── Methods ───────────────────────────────────────────────────────────────
     public void processPayment() {
-        this.status = PaymentStatus.PAID;
     }
 
     public void refund() {
-        this.status = PaymentStatus.REFUNDED;
     }
 
     @Override
     public String toString() {
-        return paymentID + " | " + playerID + " | $" + amount + " | " + method + " | " + status;
+        return "";
     }
 }

@@ -1,4 +1,3 @@
-package model;
 
 public class Rating {
 
@@ -8,17 +7,9 @@ public class Rating {
     private String sessionID;
     private int stars;
     private String comment;
-    private boolean submitted;
 
     public Rating(String ratingID, String raterID, String ratedID,
             String sessionID, int stars, String comment) {
-        this.ratingID = ratingID;
-        this.raterID = raterID;
-        this.ratedID = ratedID;
-        this.sessionID = sessionID;
-        this.stars = stars;
-        this.comment = comment;
-        this.submitted = false;
     }
 
     public String getRatingID() {
@@ -46,15 +37,14 @@ public class Rating {
     }
 
     public boolean validate() {
-        return stars >= 1 && stars <= 5;
+        return false;
     }
 
     public void submit() {
-        this.submitted = true;
     }
 
     @Override
     public String toString() {
-        return ratingID + " | " + stars + "★ — " + comment;
+        return "";
     }
 }

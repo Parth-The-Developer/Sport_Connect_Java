@@ -1,24 +1,25 @@
-package model;
 
-import enums.RequestStatus;
 import java.time.LocalDate;
 
 public class FriendRequest {
 
+    // ── Enum (lives here) ─────────────────────────────────────────────────────
+    public enum RequestStatus {
+        PENDING, ACCEPTED, DECLINED
+    }
+
+    // ── Fields ────────────────────────────────────────────────────────────────
     private String requestID;
     private String fromPlayerID;
     private String toPlayerID;
     private RequestStatus status;
     private LocalDate dateSent;
 
-    public FriendRequest(String requestID, String fromPlayerID, String toPlayerID, String dateSentStr) {
-        this.requestID = requestID;
-        this.fromPlayerID = fromPlayerID;
-        this.toPlayerID = toPlayerID;
-        this.dateSent = LocalDate.parse(dateSentStr);
-        this.status = RequestStatus.PENDING;
+    // ── Constructor ───────────────────────────────────────────────────────────
+    public FriendRequest(String requestID, String fromPlayerID, String toPlayerID) {
     }
 
+    // ── Getters ───────────────────────────────────────────────────────────────
     public String getRequestID() {
         return requestID;
     }
@@ -39,16 +40,15 @@ public class FriendRequest {
         return dateSent;
     }
 
+    // ── Methods ───────────────────────────────────────────────────────────────
     public void accept() {
-        this.status = RequestStatus.ACCEPTED;
     }
 
     public void decline() {
-        this.status = RequestStatus.DECLINED;
     }
 
     @Override
     public String toString() {
-        return requestID + " | " + fromPlayerID + " -> " + toPlayerID + " | " + status;
+        return "";
     }
 }

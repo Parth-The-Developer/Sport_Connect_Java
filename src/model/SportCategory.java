@@ -1,4 +1,3 @@
-package model;
 
 public class SportCategory {
 
@@ -6,8 +5,6 @@ public class SportCategory {
     private String name;
 
     public SportCategory(String categoryID, String name) {
-        this.categoryID = categoryID;
-        this.name = name;
     }
 
     public String getCategoryID() {
@@ -20,6 +17,6 @@ public class SportCategory {
 
     @Override
     public String toString() {
-        return categoryID + ": " + name;
+        return "";
     }
 }
