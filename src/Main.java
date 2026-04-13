@@ -101,6 +101,7 @@ public class Main {
             System.out.print("  Skill level\n  (BEGINNER / INTERMEDIATE / ADVANCED): ");
             player.setSkill_level(sc.nextLine().trim().toUpperCase());
             System.out.print("  Age          : "); player.setAge(readIntInline());
+            System.out.print("  Experience (years) : "); player.setExperience(readIntInline());
 
             playerService.addPlayer(player);
             loggedInPlayer = player;
@@ -117,7 +118,7 @@ public class Main {
             System.out.print("  Email    : "); String email = sc.nextLine().trim();
             System.out.print("  Password : "); String pass  = sc.nextLine().trim();
             sessionToken   = authService.playerLogin(email, pass);
-            loggedInPlayer = authService.getPlayerByEmail(email);
+            loggedInPlayer = playerService.getPlayerByEmail(email);
             ok("Welcome back, " + loggedInPlayer.getDisplayName() + "!");
         } catch (Exception e) {
             warn("Login failed: " + e.getMessage());
