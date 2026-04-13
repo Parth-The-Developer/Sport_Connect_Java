@@ -1,4 +1,3 @@
-package model;
 
 import java.util.ArrayList;
 
@@ -10,10 +9,6 @@ public class Chat {
     private ArrayList<String> messageList;
 
     public Chat(String chatID, String player1ID, String player2ID) {
-        this.chatID = chatID;
-        this.player1ID = player1ID;
-        this.player2ID = player2ID;
-        this.messageList = new ArrayList<>();
     }
 
     public String getChatID() {
@@ -33,10 +28,9 @@ public class Chat {
     }
 
     public void sendMessage(String senderID, String message) {
-        messageList.add(senderID + ": " + message);
     }
 
     public boolean involves(String playerID) {
-        return player1ID.equals(playerID) || player2ID.equals(playerID);
+        return false;
     }
 }
