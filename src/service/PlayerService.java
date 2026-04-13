@@ -1,6 +1,6 @@
-package com.sportconnect.service;
+package service;
 
-import com.sportconnect.model.Player;
+import model.Player;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,24 +60,21 @@ public class PlayerService {
     }
 
     public List<Player> getPlayersBySport(String sport) {
-        if (sport == null || sport.trim().isEmpty())
-            throw new IllegalArgumentException("Sport cannot be empty");
+        if (!isSet(sport)) throw new IllegalArgumentException("Sport cannot be empty");
         return playerRepo.values().stream()
                 .filter(p -> sport.equalsIgnoreCase(p.getSport()) && p.isActive())
                 .collect(Collectors.toList());
     }
 
     public List<Player> getPlayersBySkillLevel(String skillLevel) {
-        if (skillLevel == null || skillLevel.trim().isEmpty())
-            throw new IllegalArgumentException("Skill level cannot be empty");
+        if (!isSet(skillLevel)) throw new IllegalArgumentException("Skill level cannot be empty");
         return playerRepo.values().stream()
                 .filter(p -> skillLevel.equalsIgnoreCase(p.getSkill_level()) && p.isActive())
                 .collect(Collectors.toList());
     }
 
     public List<Player> getPlayersByCity(String city) {
-        if (city == null || city.trim().isEmpty())
-            throw new IllegalArgumentException("City cannot be empty");
+        if (!isSet(city)) throw new IllegalArgumentException("City cannot be empty");
         return playerRepo.values().stream()
                 .filter(p -> city.equalsIgnoreCase(p.getCity()) && p.isActive())
                 .collect(Collectors.toList());
@@ -89,25 +86,25 @@ public class PlayerService {
         if (id == null || id <= 0)
             throw new IllegalArgumentException("Invalid player ID");
         if (updated == null)
-            throw new IllegalArgumentException("Updated player data cannot be null");
+            throw new IllegalArgumentException("Updated player cannot be null");
 
         Player existing = playerRepo.get(id);
         if (existing == null)
             throw new NoSuchElementException("Player not found: ID " + id);
 
-        if (isSet(updated.getName()))        existing.setName(updated.getName());
-        if (isSet(updated.getEmail()))       existing.setEmail(updated.getEmail());
-        if (isSet(updated.getPhone()))       existing.setPhone(updated.getPhone());
-        if (isSet(updated.getSport()))       existing.setSport(updated.getSport());
-        if (updated.getAge() > 0)            existing.setAge(updated.getAge());
-        if (isSet(updated.getPosition()))    existing.setPosition(updated.getPosition());
-        if (updated.getExperience() >= 0)    existing.setExperience(updated.getExperience());
-        if (isSet(updated.getSkill_level())) existing.setSkill_level(updated.getSkill_level());
-        if (isSet(updated.getCity()))        existing.setCity(updated.getCity());
-        if (isSet(updated.getState()))       existing.setState(updated.getState());
-        if (isSet(updated.getCountry()))     existing.setCountry(updated.getCountry());
-        if (isSet(updated.getBio()))         existing.setBio(updated.getBio());
-        if (isSet(updated.getAvailability())) existing.setAvailability(updated.getAvailability());
+        if (isSet(updated.getName()))          existing.setName(updated.getName());
+        if (isSet(updated.getEmail()))         existing.setEmail(updated.getEmail());
+        if (isSet(updated.getPhone()))         existing.setPhone(updated.getPhone());
+        if (isSet(updated.getSport()))         existing.setSport(updated.getSport());
+        if (updated.getAge() > 0)              existing.setAge(updated.getAge());
+        if (isSet(updated.getPosition()))      existing.setPosition(updated.getPosition());
+        if (updated.getExperience() >= 0)      existing.setExperience(updated.getExperience());
+        if (isSet(updated.getSkill_level()))   existing.setSkill_level(updated.getSkill_level());
+        if (isSet(updated.getCity()))          existing.setCity(updated.getCity());
+        if (isSet(updated.getState()))         existing.setState(updated.getState());
+        if (isSet(updated.getCountry()))       existing.setCountry(updated.getCountry());
+        if (isSet(updated.getBio()))           existing.setBio(updated.getBio());
+        if (isSet(updated.getAvailability()))  existing.setAvailability(updated.getAvailability());
 
         existing.setUpdatedAt(LocalDateTime.now());
         return existing;
@@ -135,7 +132,8 @@ public class PlayerService {
 
     // ── Stats ─────────────────────────────────────────────────────────────────
 
-    public int getTotalPlayers()       { return playerRepo.size(); }
+    public int getTotalPlayers() { return playerRepo.size(); }
+
     public int getTotalActivePlayers() {
         return (int) playerRepo.values().stream().filter(Player::isActive).count();
     }
@@ -150,7 +148,7 @@ public class PlayerService {
         idCounter = 1L;
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────────
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private boolean isSet(String s) {
         return s != null && !s.trim().isEmpty();

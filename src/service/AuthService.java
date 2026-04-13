@@ -1,8 +1,7 @@
+package service;
 
-package com.sportconnect.service;
-
-import com.sportconnect.model.Admin;
-import com.sportconnect.model.Player;
+import model.Admin;
+import model.Player;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -22,7 +21,8 @@ public class AuthService {
 
     public Admin registerAdmin(String username, String password,
                                String email, String fullName) {
-        validateInput(username, password, email);
+        validateCredentials(username, password, email);
+
         if (adminRepo.containsKey(username.toLowerCase()))
             throw new IllegalArgumentException("Username already exists");
         if (adminRepo.values().stream()
@@ -39,7 +39,7 @@ public class AuthService {
             throw new IllegalArgumentException("Username and password cannot be empty");
 
         Admin admin = adminRepo.get(username.toLowerCase());
-        if (admin == null || !admin.getPassword().equals(password))
+        if (admin == null || !admin.getPasswordHash().equals(password))
             throw new IllegalArgumentException("Invalid username or password");
         if (!admin.isActive())
             throw new IllegalArgumentException("Admin account is deactivated");
@@ -71,7 +71,7 @@ public class AuthService {
             throw new IllegalArgumentException("Email and password cannot be empty");
 
         Player player = playerRepo.get(email.toLowerCase());
-        if (player == null)
+        if (player == null || !password.equals(player.getPasswordHash()))
             throw new IllegalArgumentException("Invalid email or password");
         if (!player.isActive())
             throw new IllegalArgumentException("Player account is deactivated");
@@ -97,7 +97,7 @@ public class AuthService {
         if (!isSet(username))
             throw new IllegalArgumentException("Username cannot be empty");
         Admin a = adminRepo.get(username.toLowerCase());
-        if (a == null) throw new NoSuchElementException("Admin not found");
+        if (a == null) throw new NoSuchElementException("Admin not found: " + username);
         return a;
     }
 
@@ -105,30 +105,30 @@ public class AuthService {
         if (!isSet(email))
             throw new IllegalArgumentException("Email cannot be empty");
         Player p = playerRepo.get(email.toLowerCase());
-        if (p == null) throw new NoSuchElementException("Player not found");
+        if (p == null) throw new NoSuchElementException("Player not found: " + email);
         return p;
     }
 
-    public List<Admin>  getAllAdmins()   { return new ArrayList<>(adminRepo.values()); }
-    public List<Player> getAllPlayers()  { return new ArrayList<>(playerRepo.values()); }
+    public List<Admin>  getAllAdmins()  { return new ArrayList<>(adminRepo.values()); }
+    public List<Player> getAllPlayers() { return new ArrayList<>(playerRepo.values()); }
 
-    public boolean adminExists(String username)  {
+    public boolean adminExists(String username) {
         return adminRepo.containsKey(username.toLowerCase());
     }
-    public boolean playerExists(String email)    {
+    public boolean playerExists(String email) {
         return playerRepo.containsKey(email.toLowerCase());
     }
 
-    // ── Password management ───────────────────────────────────────────────────
+    // ── Password change ───────────────────────────────────────────────────────
 
     public void updateAdminPassword(String username, String oldPwd, String newPwd) {
         if (!isSet(newPwd) || newPwd.length() < MIN_PASSWORD_LENGTH)
             throw new IllegalArgumentException(
                 "Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
         Admin admin = getAdminByUsername(username);
-        if (!admin.getPassword().equals(oldPwd))
+        if (!admin.getPasswordHash().equals(oldPwd))
             throw new IllegalArgumentException("Old password is incorrect");
-        admin.setPassword(newPwd);
+        admin.setPasswordHash(newPwd);
         admin.setUpdatedAt(LocalDateTime.now());
     }
 
@@ -148,9 +148,11 @@ public class AuthService {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    private void validateInput(String username, String password, String email) {
-        if (!isSet(username)) throw new IllegalArgumentException("Username cannot be empty");
-        if (!isSet(password)) throw new IllegalArgumentException("Password cannot be empty");
+    private void validateCredentials(String username, String password, String email) {
+        if (!isSet(username))
+            throw new IllegalArgumentException("Username cannot be empty");
+        if (!isSet(password))
+            throw new IllegalArgumentException("Password cannot be empty");
         if (password.length() < MIN_PASSWORD_LENGTH)
             throw new IllegalArgumentException(
                 "Password must be at least " + MIN_PASSWORD_LENGTH + " characters");

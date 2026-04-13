@@ -1,11 +1,11 @@
-package com.sportconnect.model;
+package model;
 
 import java.time.LocalDateTime;
 
 public class Player {
 
     private Long          playerId;
-    private String        name;
+    private String        name;          // also used as username
     private String        email;
     private String        phone;
     private String        passwordHash;
@@ -33,8 +33,8 @@ public class Player {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /** Used by AuthService.registerPlayer(name, email, phone, sport, experience) */
-    public Player(String name, String email, String phone, String sport, int experience) {
+    public Player(String name, String email, String phone,
+                  String sport, int experience) {
         this();
         this.name       = name;
         this.email      = email;
@@ -45,7 +45,8 @@ public class Player {
 
     public Player(Long playerId, String name, String email, String phone,
                   String sport, String skill_level, String position,
-                  int experience, int age, String city, String state, String country) {
+                  int experience, int age,
+                  String city, String state, String country) {
         this();
         this.playerId    = playerId;
         this.name        = name;
@@ -61,63 +62,72 @@ public class Player {
         this.country     = country;
     }
 
+    // ── Role (overridden by Admin) ─────────────────────────────────────────────
+
+    public String getRole() {
+        return "PLAYER";
+    }
+
     // ── Getters & Setters ─────────────────────────────────────────────────────
 
-    public Long   getPlayerId()               { return playerId; }
-    public void   setPlayerId(Long v)         { this.playerId = v; }
+    public Long   getPlayerId()                    { return playerId; }
+    public void   setPlayerId(Long v)              { this.playerId = v; }
 
-    public String getName()                   { return name; }
-    public void   setName(String v)           { this.name = v; }
+    /** Alias used by Admin portal — same as getName() */
+    public String getUsername()                    { return name; }
 
-    public String getEmail()                  { return email; }
-    public void   setEmail(String v)          { this.email = v; }
+    public String getName()                        { return name; }
+    public void   setName(String v)                { this.name = v; }
 
-    public String getPhone()                  { return phone; }
-    public void   setPhone(String v)          { this.phone = v; }
+    public String getEmail()                       { return email; }
+    public void   setEmail(String v)               { this.email = v; }
 
-    public String getPasswordHash()           { return passwordHash; }
-    public void   setPasswordHash(String v)   { this.passwordHash = v; }
+    public String getPhone()                       { return phone; }
+    public void   setPhone(String v)               { this.phone = v; }
 
-    public String getSport()                  { return sport; }
-    public void   setSport(String v)          { this.sport = v; }
+    public String getPasswordHash()                { return passwordHash; }
+    public void   setPasswordHash(String v)        { this.passwordHash = v; }
 
-    public String getSkill_level()            { return skill_level; }
-    public void   setSkill_level(String v)    { this.skill_level = v; }
+    public String getSport()                       { return sport; }
+    public void   setSport(String v)               { this.sport = v; }
 
-    public String getPosition()               { return position; }
-    public void   setPosition(String v)       { this.position = v; }
+    public String getSkill_level()                 { return skill_level; }
+    public void   setSkill_level(String v)         { this.skill_level = v; }
 
-    public int    getExperience()             { return experience; }
-    public void   setExperience(int v)        { this.experience = v; }
+    public String getPosition()                    { return position; }
+    public void   setPosition(String v)            { this.position = v; }
 
-    public double getRating()                 { return rating; }
-    public void   setRating(double v)         { this.rating = v; }
+    public int    getExperience()                  { return experience; }
+    public void   setExperience(int v)             { this.experience = v; }
 
-    public String getAvailability()           { return availability; }
-    public void   setAvailability(String v)   { this.availability = v; }
+    public double getRating()                      { return rating; }
+    public void   setRating(double v)              { this.rating = v; }
 
-    public int    getAge()                    { return age; }
-    public void   setAge(int v)               { this.age = v; }
+    public String getAvailability()                { return availability; }
+    public void   setAvailability(String v)        { this.availability = v; }
 
-    public String getBio()                    { return bio; }
-    public void   setBio(String v)            { this.bio = v; }
+    public int    getAge()                         { return age; }
+    public void   setAge(int v)                    { this.age = v; }
 
-    public String getCity()                   { return city; }
-    public void   setCity(String v)           { this.city = v; }
+    public String getBio()                         { return bio; }
+    public void   setBio(String v)                 { this.bio = v; }
 
-    public String getState()                  { return state; }
-    public void   setState(String v)          { this.state = v; }
+    public String getCity()                        { return city; }
+    public void   setCity(String v)                { this.city = v; }
 
-    public String getCountry()                { return country; }
-    public void   setCountry(String v)        { this.country = v; }
+    public String getState()                       { return state; }
+    public void   setState(String v)               { this.state = v; }
 
-    public boolean       isActive()           { return active; }
-    public void          setActive(boolean v) { this.active = v; }
+    public String getCountry()                     { return country; }
+    public void   setCountry(String v)             { this.country = v; }
 
-    public LocalDateTime getCreatedAt()       { return createdAt; }
+    public boolean       isActive()                { return active; }
+    public void          setActive(boolean v)      { this.active = v; }
+
+    public LocalDateTime getCreatedAt()            { return createdAt; }
     public void          setCreatedAt(LocalDateTime v) { this.createdAt = v; }
 
-    public LocalDateTime getUpdatedAt()       { return updatedAt; }
+    public LocalDateTime getUpdatedAt()            { return updatedAt; }
     public void          setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
 
     // ── Utility ───────────────────────────────────────────────────────────────
@@ -129,8 +139,7 @@ public class Player {
     @Override
     public String toString() {
         return String.format(
-            "Player { id=%d, name='%s', email='%s', sport='%s', skill='%s'," +
-            " city='%s', rating=%.1f, active=%b }",
-            playerId, name, email, sport, skill_level, city, rating, active);
+            "[%s] id=%-3d  %-20s  sport=%-12s  skill=%-14s  city=%s",
+            getRole(), playerId, name, sport, skill_level, city);
     }
 }
