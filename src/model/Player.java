@@ -5,12 +5,12 @@ import java.time.LocalDateTime;
 public class Player {
 
     private Long          playerId;
-    private String        name;          // also used as username
+    private String        name;
     private String        email;
     private String        phone;
     private String        passwordHash;
     private String        sport;
-    private String        skill_level;   // "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
+    private String        skill_level;  // "BEGINNER" | "INTERMEDIATE" | "ADVANCED"
     private String        position;
     private int           experience;
     private double        rating;
@@ -62,7 +62,7 @@ public class Player {
         this.country     = country;
     }
 
-    // ── Role (overridden by Admin) ─────────────────────────────────────────────
+    // ── Role — overridden by Admin ────────────────────────────────────────────
 
     public String getRole() {
         return "PLAYER";
@@ -70,65 +70,64 @@ public class Player {
 
     // ── Getters & Setters ─────────────────────────────────────────────────────
 
-    public Long   getPlayerId()                    { return playerId; }
-    public void   setPlayerId(Long v)              { this.playerId = v; }
+    public Long   getPlayerId()             { return playerId; }
+    public void   setPlayerId(Long v)       { this.playerId = v; }
 
-    /** Alias used by Admin portal — same as getName() */
-    public String getUsername()                    { return name; }
+    public String getUsername()             { return name; }   // alias for Admin portal
 
-    public String getName()                        { return name; }
-    public void   setName(String v)                { this.name = v; }
+    public String getName()                 { return name; }
+    public void   setName(String v)         { this.name = v; }
 
-    public String getEmail()                       { return email; }
-    public void   setEmail(String v)               { this.email = v; }
+    public String getEmail()                { return email; }
+    public void   setEmail(String v)        { this.email = v; }
 
-    public String getPhone()                       { return phone; }
-    public void   setPhone(String v)               { this.phone = v; }
+    public String getPhone()                { return phone; }
+    public void   setPhone(String v)        { this.phone = v; }
 
-    public String getPasswordHash()                { return passwordHash; }
-    public void   setPasswordHash(String v)        { this.passwordHash = v; }
+    public String getPasswordHash()         { return passwordHash; }
+    public void   setPasswordHash(String v) { this.passwordHash = v; }
 
-    public String getSport()                       { return sport; }
-    public void   setSport(String v)               { this.sport = v; }
+    public String getSport()                { return sport; }
+    public void   setSport(String v)        { this.sport = v; }
 
-    public String getSkill_level()                 { return skill_level; }
-    public void   setSkill_level(String v)         { this.skill_level = v; }
+    public String getSkill_level()          { return skill_level; }
+    public void   setSkill_level(String v)  { this.skill_level = v; }
 
-    public String getPosition()                    { return position; }
-    public void   setPosition(String v)            { this.position = v; }
+    public String getPosition()             { return position; }
+    public void   setPosition(String v)     { this.position = v; }
 
-    public int    getExperience()                  { return experience; }
-    public void   setExperience(int v)             { this.experience = v; }
+    public int    getExperience()           { return experience; }
+    public void   setExperience(int v)      { this.experience = v; }
 
-    public double getRating()                      { return rating; }
-    public void   setRating(double v)              { this.rating = v; }
+    public double getRating()               { return rating; }
+    public void   setRating(double v)       { this.rating = v; }
 
-    public String getAvailability()                { return availability; }
-    public void   setAvailability(String v)        { this.availability = v; }
+    public String getAvailability()         { return availability; }
+    public void   setAvailability(String v) { this.availability = v; }
 
-    public int    getAge()                         { return age; }
-    public void   setAge(int v)                    { this.age = v; }
+    public int    getAge()                  { return age; }
+    public void   setAge(int v)             { this.age = v; }
 
-    public String getBio()                         { return bio; }
-    public void   setBio(String v)                 { this.bio = v; }
+    public String getBio()                  { return bio; }
+    public void   setBio(String v)          { this.bio = v; }
 
-    public String getCity()                        { return city; }
-    public void   setCity(String v)                { this.city = v; }
+    public String getCity()                 { return city; }
+    public void   setCity(String v)         { this.city = v; }
 
-    public String getState()                       { return state; }
-    public void   setState(String v)               { this.state = v; }
+    public String getState()                { return state; }
+    public void   setState(String v)        { this.state = v; }
 
-    public String getCountry()                     { return country; }
-    public void   setCountry(String v)             { this.country = v; }
+    public String getCountry()              { return country; }
+    public void   setCountry(String v)      { this.country = v; }
 
-    public boolean       isActive()                { return active; }
-    public void          setActive(boolean v)      { this.active = v; }
+    public boolean       isActive()         { return active; }
+    public void          setActive(boolean v) { this.active = v; }
 
-    public LocalDateTime getCreatedAt()            { return createdAt; }
-    public void          setCreatedAt(LocalDateTime v) { this.createdAt = v; }
+    public LocalDateTime getCreatedAt()     { return createdAt; }
+    public void setCreatedAt(LocalDateTime v) { this.createdAt = v; }
 
-    public LocalDateTime getUpdatedAt()            { return updatedAt; }
-    public void          setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
+    public LocalDateTime getUpdatedAt()     { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
 
     // ── Utility ───────────────────────────────────────────────────────────────
 

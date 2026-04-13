@@ -6,49 +6,22 @@ import service.PlayerService;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * SportConnect — Console Application
- *
- * Module ownership:
- *   Sahil  → Player, Admin, AuthService, PlayerService        ← DONE
- *   Parth  → FriendRequest, Chat, Admin cancelSession/refund  ← TODO Week 2
- *   Kelvin → Team, GameSession, scheduleGame()                ← TODO Week 2
- *   Dhruv  → Rating, Payment, markSessionCompleted()          ← TODO Week 3
- *   All    → Main.java menus
- */
 public class Main {
 
-    // ── Services ──────────────────────────────────────────────────────────────
     static final AuthService   authService   = new AuthService();
     static final PlayerService playerService = new PlayerService();
 
-    // TODO Parth  → static final FriendRequestService friendService  = new FriendRequestService();
-    // TODO Parth  → static final ChatService          chatService    = new ChatService();
-    // TODO Kelvin → static final TeamService          teamService    = new TeamService();
-    // TODO Kelvin → static final GameService          gameService    = new GameService();
-    // TODO Dhruv  → static final RatingService        ratingService  = new RatingService();
-    // TODO Dhruv  → static final PaymentService       paymentService = new PaymentService();
-
-    // ── Session state ─────────────────────────────────────────────────────────
     static Player loggedInPlayer = null;
     static Admin  loggedInAdmin  = null;
     static String sessionToken   = null;
 
     static final Scanner sc = new Scanner(System.in);
 
-    // =========================================================================
-    // ENTRY POINT
-    // =========================================================================
-
     public static void main(String[] args) {
         seedData();
         mainMenu();
         sc.close();
     }
-
-    // =========================================================================
-    // MAIN MENU
-    // =========================================================================
 
     static void mainMenu() {
         while (true) {
@@ -66,14 +39,9 @@ public class Main {
         }
     }
 
-    // =========================================================================
-    // PLAYER PORTAL  (Sahil)
-    // =========================================================================
-
     static void playerPortal() {
         while (true) {
             printHeader("Player Portal");
-
             if (loggedInPlayer == null) {
                 System.out.println("  1. Sign Up");
                 System.out.println("  2. Log In");
@@ -115,8 +83,6 @@ public class Main {
         }
     }
 
-    // ── Sign Up ───────────────────────────────────────────────────────────────
-
     static void playerSignUp() {
         printHeader("Player Sign Up");
         try {
@@ -126,20 +92,15 @@ public class Main {
             System.out.print("  Phone        : "); String phone = sc.nextLine().trim();
             System.out.print("  Sport        : "); String sport = sc.nextLine().trim();
 
-            // Register in AuthService (handles email uniqueness)
             Player player = authService.registerPlayer(email, name, phone, sport);
             player.setPasswordHash(pass);
 
-            // Collect extra profile fields
             System.out.print("  City         : "); player.setCity(sc.nextLine().trim());
-            System.out.print("  Skill level\n"
-                           + "  (BEGINNER / INTERMEDIATE / ADVANCED): ");
+            System.out.print("  Skill level\n  (BEGINNER / INTERMEDIATE / ADVANCED): ");
             player.setSkill_level(sc.nextLine().trim().toUpperCase());
             System.out.print("  Age          : "); player.setAge(readIntInline());
 
-            // Also register in PlayerService for search
             playerService.addPlayer(player);
-
             loggedInPlayer = player;
             sessionToken   = generateSessionToken(email, "PLAYER");
             ok("Welcome to SportConnect, " + player.getDisplayName() + "!");
@@ -148,14 +109,11 @@ public class Main {
         }
     }
 
-    // ── Log In ────────────────────────────────────────────────────────────────
-
     static void playerLogin() {
         printHeader("Player Log In");
         try {
             System.out.print("  Email    : "); String email = sc.nextLine().trim();
             System.out.print("  Password : "); String pass  = sc.nextLine().trim();
-
             sessionToken   = authService.playerLogin(email, pass);
             loggedInPlayer = authService.getPlayerByEmail(email);
             ok("Welcome back, " + loggedInPlayer.getDisplayName() + "!");
@@ -170,8 +128,6 @@ public class Main {
         loggedInPlayer = null;
         sessionToken   = null;
     }
-
-    // ── Profile ───────────────────────────────────────────────────────────────
 
     static void viewMyProfile() {
         printHeader("My Profile");
@@ -188,8 +144,6 @@ public class Main {
         System.out.printf("  Member since: %s%n",     p.getCreatedAt().toLocalDate());
         pause();
     }
-
-    // ── Search ────────────────────────────────────────────────────────────────
 
     static void searchBySport() {
         printHeader("Search by Sport");
@@ -210,16 +164,11 @@ public class Main {
         printPlayerList(playerService.getPlayersByCity(sc.nextLine().trim()));
     }
 
-    // =========================================================================
-    // ADMIN PORTAL  (Sahil)
-    // =========================================================================
-
     static void adminPortal() {
         if (loggedInAdmin == null) {
             adminLogin();
             if (loggedInAdmin == null) return;
         }
-
         while (true) {
             printHeader("Admin Portal — " + loggedInAdmin.getUsername()
                       + "  [" + loggedInAdmin.getRole() + "]");
@@ -253,7 +202,6 @@ public class Main {
         try {
             System.out.print("  Username : "); String user = sc.nextLine().trim();
             System.out.print("  Password : "); String pass = sc.nextLine().trim();
-
             sessionToken  = authService.adminLogin(user, pass);
             loggedInAdmin = authService.getAdminByUsername(user);
             ok("Welcome, " + loggedInAdmin.getFullName() + "!");
@@ -294,10 +242,6 @@ public class Main {
         try { playerService.deletePlayer((long) readIntInline()); ok("Player deleted."); }
         catch (Exception e) { warn(e.getMessage()); }
     }
-
-    // =========================================================================
-    // DISPLAY HELPERS
-    // =========================================================================
 
     static void printBanner() {
         System.out.println();
@@ -363,35 +307,21 @@ public class Main {
         return type + "_" + id + "_" + System.currentTimeMillis();
     }
 
-    // =========================================================================
-    // SEED DATA — works on first launch without any setup
-    // =========================================================================
-
     static void seedData() {
-    authService.registerAdmin("admin", "admin123",
-                              "admin@sportconnect.com", "System Admin");
-
-    authService.registerSuperAdmin("superadmin", "super123",
-                               "super@sportconnect.com", "Super Admin");
-
-        // Demo players so search works immediately
-    addDemo("Lien Tran",     "lien@demo.com",   "647-111-2222",
-        "Cricket",    "BEGINNER",     "Toronto",     21, 2);
-addDemo("Brian Carter",  "brian@demo.com",  "905-222-3333",
-        "Cricket",    "ADVANCED",     "Brampton",    24, 5);
-addDemo("Shahshree Das", "shahshree@demo.com", "416-333-4444",
-        "Cricket",    "INTERMEDIATE", "Mississauga", 22, 3);
-addDemo("Hassana Diallo","hassana@demo.com","647-444-5555",
-        "Volleyball", "BEGINNER",     "Toronto",     20, 1);
-addDemo("Pooja Mehta",   "pooja@demo.com",  "905-555-6666",
-        "Cricket",    "ADVANCED",     "Brampton",    26, 6);
-addDemo("Riddhi Shah",   "riddhi@demo.com", "416-666-7777",
-        "Soccer",     "INTERMEDIATE", "Mississauga", 23, 4);
+        authService.registerAdmin("admin", "admin123",
+                                  "admin@sportconnect.com", "System Admin");
+        authService.registerSuperAdmin("superadmin", "super123",
+                                       "super@sportconnect.com", "Super Admin");
+        addDemo("Lien Tran",      "lien@demo.com",      "647-111-2222", "Cricket",    "BEGINNER",     "Toronto",     21, 2);
+        addDemo("Brian Carter",   "brian@demo.com",     "905-222-3333", "Cricket",    "ADVANCED",     "Brampton",    24, 5);
+        addDemo("Shahshree Das",  "shahshree@demo.com", "416-333-4444", "Cricket",    "INTERMEDIATE", "Mississauga", 22, 3);
+        addDemo("Hassana Diallo", "hassana@demo.com",   "647-444-5555", "Volleyball", "BEGINNER",     "Toronto",     20, 1);
+        addDemo("Pooja Mehta",    "pooja@demo.com",     "905-555-6666", "Cricket",    "ADVANCED",     "Brampton",    26, 6);
+        addDemo("Riddhi Shah",    "riddhi@demo.com",    "416-666-7777", "Soccer",     "INTERMEDIATE", "Mississauga", 23, 4);
     }
 
     static void addDemo(String name, String email, String phone,
-                        String sport, String skill, String city,
-                        int age, int exp) {
+                        String sport, String skill, String city, int age, int exp) {
         Player p = authService.registerPlayer(email, name, phone, sport);
         p.setPasswordHash("demo123");
         p.setSkill_level(skill);

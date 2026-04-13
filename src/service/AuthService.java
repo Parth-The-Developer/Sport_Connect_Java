@@ -10,19 +10,18 @@ public class AuthService {
 
     private final Map<String, Admin>  adminRepo  = new HashMap<>();
     private final Map<String, Player> playerRepo = new HashMap<>();
-    private final Map<String, String> tokenRepo  = new HashMap<>(); // token → identifier
+    private final Map<String, String> tokenRepo  = new HashMap<>();
     private Long adminIdCounter = 1L;
 
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
     private static final int MIN_PASSWORD_LENGTH = 6;
 
-    // ── Admin registration & login ────────────────────────────────────────────
+    // ── Admin registration ────────────────────────────────────────────────────
 
     public Admin registerAdmin(String username, String password,
                                String email, String fullName) {
         validateCredentials(username, password, email);
-
         if (adminRepo.containsKey(username.toLowerCase()))
             throw new IllegalArgumentException("Username already exists");
         if (adminRepo.values().stream()
@@ -33,6 +32,19 @@ public class AuthService {
         adminRepo.put(username.toLowerCase(), admin);
         return admin;
     }
+
+    public Admin registerSuperAdmin(String username, String password,
+                                    String email, String fullName) {
+        validateCredentials(username, password, email);
+        if (adminRepo.containsKey(username.toLowerCase()))
+            throw new IllegalArgumentException("Username already exists");
+
+        Admin admin = new Admin(adminIdCounter++, username, password, email, fullName, 2);
+        adminRepo.put(username.toLowerCase(), admin);
+        return admin;
+    }
+
+    // ── Admin login ───────────────────────────────────────────────────────────
 
     public String adminLogin(String username, String password) {
         if (!isSet(username) || !isSet(password))
@@ -50,7 +62,7 @@ public class AuthService {
         return token;
     }
 
-    // ── Player registration & login ───────────────────────────────────────────
+    // ── Player registration ───────────────────────────────────────────────────
 
     public Player registerPlayer(String email, String name,
                                  String phone, String sport) {
@@ -65,6 +77,8 @@ public class AuthService {
         playerRepo.put(email.toLowerCase(), player);
         return player;
     }
+
+    // ── Player login ──────────────────────────────────────────────────────────
 
     public String playerLogin(String email, String password) {
         if (!isSet(email) || !isSet(password))
@@ -109,21 +123,13 @@ public class AuthService {
         return p;
     }
 
-    public Admin registerSuperAdmin(String username, String password,
-                                String email, String fullName) {
-    validateCredentials(username, password, email);
-    Admin admin = new Admin(adminIdCounter++, username, password, 
-                            email, fullName, 2); // 2 = super admin
-    adminRepo.put(username.toLowerCase(), admin);
-    return admin;
-}
-
     public List<Admin>  getAllAdmins()  { return new ArrayList<>(adminRepo.values()); }
     public List<Player> getAllPlayers() { return new ArrayList<>(playerRepo.values()); }
 
-    public boolean adminExists(String username) { 
+    public boolean adminExists(String username) {
         return adminRepo.containsKey(username.toLowerCase());
     }
+
     public boolean playerExists(String email) {
         return playerRepo.containsKey(email.toLowerCase());
     }

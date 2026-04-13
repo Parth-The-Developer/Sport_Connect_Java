@@ -92,25 +92,25 @@ public class PlayerService {
         if (existing == null)
             throw new NoSuchElementException("Player not found: ID " + id);
 
-        if (isSet(updated.getName()))          existing.setName(updated.getName());
-        if (isSet(updated.getEmail()))         existing.setEmail(updated.getEmail());
-        if (isSet(updated.getPhone()))         existing.setPhone(updated.getPhone());
-        if (isSet(updated.getSport()))         existing.setSport(updated.getSport());
-        if (updated.getAge() > 0)              existing.setAge(updated.getAge());
-        if (isSet(updated.getPosition()))      existing.setPosition(updated.getPosition());
-        if (updated.getExperience() >= 0)      existing.setExperience(updated.getExperience());
-        if (isSet(updated.getSkill_level()))   existing.setSkill_level(updated.getSkill_level());
-        if (isSet(updated.getCity()))          existing.setCity(updated.getCity());
-        if (isSet(updated.getState()))         existing.setState(updated.getState());
-        if (isSet(updated.getCountry()))       existing.setCountry(updated.getCountry());
-        if (isSet(updated.getBio()))           existing.setBio(updated.getBio());
-        if (isSet(updated.getAvailability()))  existing.setAvailability(updated.getAvailability());
+        if (isSet(updated.getName()))         existing.setName(updated.getName());
+        if (isSet(updated.getEmail()))        existing.setEmail(updated.getEmail());
+        if (isSet(updated.getPhone()))        existing.setPhone(updated.getPhone());
+        if (isSet(updated.getSport()))        existing.setSport(updated.getSport());
+        if (updated.getAge() > 0)             existing.setAge(updated.getAge());
+        if (isSet(updated.getPosition()))     existing.setPosition(updated.getPosition());
+        if (updated.getExperience() >= 0)     existing.setExperience(updated.getExperience());
+        if (isSet(updated.getSkill_level()))  existing.setSkill_level(updated.getSkill_level());
+        if (isSet(updated.getCity()))         existing.setCity(updated.getCity());
+        if (isSet(updated.getState()))        existing.setState(updated.getState());
+        if (isSet(updated.getCountry()))      existing.setCountry(updated.getCountry());
+        if (isSet(updated.getBio()))          existing.setBio(updated.getBio());
+        if (isSet(updated.getAvailability())) existing.setAvailability(updated.getAvailability());
 
         existing.setUpdatedAt(LocalDateTime.now());
         return existing;
     }
 
-    // ── Delete / Activate ─────────────────────────────────────────────────────
+    // ── Activate / Deactivate / Delete ────────────────────────────────────────
 
     public void deactivatePlayer(Long id) {
         Player p = getPlayerById(id);
