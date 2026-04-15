@@ -1,19 +1,18 @@
 package service;
 
-import jakarta.mail.Authenticator;
-import jakarta.mail.Message;
-import jakarta.mail.MessagingException;
-import jakarta.mail.PasswordAuthentication;
-import jakarta.mail.Session;
-import jakarta.mail.Transport;
-import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
-
-import java.util.Properties;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 public class EmailService {
     private static final String SMTP_HOST = "smtp.gmail.com";
-    private static final String SMTP_PORT = "587";
+    private static final int SMTP_SSL_PORT = 465;
     private static final String SMTP_SENDER_EMAIL_KEY = "SMTP_SENDER_EMAIL";
     private static final String SMTP_APP_PASSWORD_KEY = "SMTP_APP_PASSWORD";
 
@@ -44,61 +43,24 @@ public class EmailService {
             System.out.println("[Email] Skipped: recipient email is empty or invalid.");
             return false;
         }
-
-        Session session = createSession(credentials.getSenderEmail(), credentials.getAppPassword());
-
         try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(credentials.getSenderEmail()));
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
-            message.setSubject(subject);
-            message.setText(body);
-
-            Transport.send(message);
+            sendViaGmailSmtp(
+                credentials.getSenderEmail(),
+                credentials.getAppPassword(),
+                toEmail,
+                subject,
+                body
+            );
             System.out.println("[Email] Sent " + emailType + " to " + toEmail);
             return true;
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             System.out.println("[Email] Send failed (" + emailType + "): " + e.getMessage());
             return false;
         }
     }
 
-    private SmtpCredentials loadSmtpCredentials() {
-        String smtpEmail = readEnv(SMTP_SENDER_EMAIL_KEY);
-        String smtpPassword = readEnv(SMTP_APP_PASSWORD_KEY);
-        if (isBlank(smtpEmail) || isBlank(smtpPassword)) {
-            System.out.println("[Email] Skipped: set " + SMTP_SENDER_EMAIL_KEY + " and " + SMTP_APP_PASSWORD_KEY + ".");
-            return null;
-        }
-        return new SmtpCredentials(smtpEmail, smtpPassword);
-    }
-
-    private Session createSession(String smtpEmail, String smtpPassword) {
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", SMTP_HOST);
-        props.put("mail.smtp.port", SMTP_PORT);
-
-        return Session.getInstance(props, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(smtpEmail, smtpPassword);
-            }
-        });
-    }
-
     private boolean isValidEmail(String email) {
-        if (isBlank(email)) {
-            return false;
-        }
-        try {
-            InternetAddress address = new InternetAddress(email);
-            address.validate();
-            return true;
-        } catch (MessagingException ex) {
-            return false;
-        }
+        return !isBlank(email) && email.contains("@") && email.contains(".");
     }
 
     private String readEnv(String key) {
@@ -112,6 +74,88 @@ public class EmailService {
 
     private String safe(String s) {
         return isBlank(s) ? "Player" : s;
+    }
+
+    private SmtpCredentials loadSmtpCredentials() {
+        String smtpEmail = readEnv(SMTP_SENDER_EMAIL_KEY);
+        String smtpPassword = readEnv(SMTP_APP_PASSWORD_KEY);
+        if (isBlank(smtpEmail) || isBlank(smtpPassword)) {
+            System.out.println("[Email] Skipped: set " + SMTP_SENDER_EMAIL_KEY + " and " + SMTP_APP_PASSWORD_KEY + ".");
+            return null;
+        }
+        return new SmtpCredentials(smtpEmail, smtpPassword);
+    }
+
+    private void sendViaGmailSmtp(String fromEmail, String appPassword,
+                                  String toEmail, String subject, String body) throws IOException {
+        SSLSocketFactory factory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        try (SSLSocket socket = (SSLSocket) factory.createSocket(SMTP_HOST, SMTP_SSL_PORT);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8))) {
+
+            expectCode(readLine(in), "220");
+            sendLine(out, "EHLO localhost");
+            readMultiline(in);
+
+            sendLine(out, "AUTH LOGIN");
+            expectCode(readLine(in), "334");
+            sendLine(out, base64(fromEmail));
+            expectCode(readLine(in), "334");
+            sendLine(out, base64(appPassword));
+            expectCode(readLine(in), "235");
+
+            sendLine(out, "MAIL FROM:<" + fromEmail + ">");
+            expectCode(readLine(in), "250");
+            sendLine(out, "RCPT TO:<" + toEmail + ">");
+            expectCode(readLine(in), "250");
+            sendLine(out, "DATA");
+            expectCode(readLine(in), "354");
+
+            sendLine(out, "From: " + fromEmail);
+            sendLine(out, "To: " + toEmail);
+            sendLine(out, "Subject: " + sanitizeHeader(subject));
+            sendLine(out, "");
+            sendLine(out, body);
+            sendLine(out, ".");
+            expectCode(readLine(in), "250");
+
+            sendLine(out, "QUIT");
+            readLine(in);
+        }
+    }
+
+    private String base64(String v) {
+        return Base64.getEncoder().encodeToString(v.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String sanitizeHeader(String v) {
+        return v.replace("\r", " ").replace("\n", " ");
+    }
+
+    private void sendLine(BufferedWriter out, String line) throws IOException {
+        out.write(line);
+        out.write("\r\n");
+        out.flush();
+    }
+
+    private String readLine(BufferedReader in) throws IOException {
+        String line = in.readLine();
+        if (line == null) throw new IOException("SMTP connection closed unexpectedly");
+        return line;
+    }
+
+    private String readMultiline(BufferedReader in) throws IOException {
+        String line = readLine(in);
+        while (line.length() >= 4 && line.charAt(3) == '-') {
+            line = readLine(in);
+        }
+        return line;
+    }
+
+    private void expectCode(String line, String expectedPrefix) throws IOException {
+        if (!line.startsWith(expectedPrefix)) {
+            throw new IOException("SMTP error: " + line);
+        }
     }
 
     private static class SmtpCredentials {
