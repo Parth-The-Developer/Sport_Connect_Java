@@ -9,6 +9,10 @@ public class Chat {
     private ArrayList<String> messageList;
 
     public Chat(String chatID, String player1ID, String player2ID) {
+        this.chatID = chatID;
+        this.player1ID = player1ID;
+        this.player2ID = player2ID;
+        this.messageList = new ArrayList<>();
     }
 
     public String getChatID() {
@@ -28,9 +32,13 @@ public class Chat {
     }
 
     public void sendMessage(String senderID, String message) {
+        if (senderID == null || senderID.isBlank()) return;
+        if (message == null || message.isBlank()) return;
+        messageList.add(senderID + ": " + message.trim());
     }
 
     public boolean involves(String playerID) {
-        return false;
+        if (playerID == null) return false;
+        return playerID.equals(player1ID) || playerID.equals(player2ID);
     }
 }

@@ -1,11 +1,9 @@
- package model;   import java.time.LocalDate;
+package model;
+
+import enums.RequestStatus;
+import java.time.LocalDate;
 
 public class FriendRequest {
-
-    // ── Enum (lives here) ─────────────────────────────────────────────────────
-    public enum RequestStatus {
-        PENDING, ACCEPTED, DECLINED
-    }
 
     // ── Fields ────────────────────────────────────────────────────────────────
     private String requestID;
@@ -16,6 +14,20 @@ public class FriendRequest {
 
     // ── Constructor ───────────────────────────────────────────────────────────
     public FriendRequest(String requestID, String fromPlayerID, String toPlayerID) {
+        this.requestID = requestID;
+        this.fromPlayerID = fromPlayerID;
+        this.toPlayerID = toPlayerID;
+        this.status = RequestStatus.PENDING;
+        this.dateSent = LocalDate.now();
+    }
+
+    public FriendRequest(String requestID, String fromPlayerID, String toPlayerID,
+                         RequestStatus status, LocalDate dateSent) {
+        this.requestID = requestID;
+        this.fromPlayerID = fromPlayerID;
+        this.toPlayerID = toPlayerID;
+        this.status = status;
+        this.dateSent = dateSent;
     }
 
     // ── Getters ───────────────────────────────────────────────────────────────
@@ -41,13 +53,18 @@ public class FriendRequest {
 
     // ── Methods ───────────────────────────────────────────────────────────────
     public void accept() {
+        this.status = RequestStatus.ACCEPTED;
     }
 
     public void decline() {
+        this.status = RequestStatus.DECLINED;
     }
 
     @Override
     public String toString() {
-        return "";
+        return String.format(
+            "requestId=%s, from=%s, to=%s, status=%s, sentOn=%s",
+            requestID, fromPlayerID, toPlayerID, status, dateSent
+        );
     }
 }
