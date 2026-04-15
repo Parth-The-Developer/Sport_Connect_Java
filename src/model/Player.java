@@ -128,7 +128,6 @@ public class Player {
 
     public LocalDateTime getUpdatedAt()     { return updatedAt; }
     public void setUpdatedAt(LocalDateTime v) { this.updatedAt = v; }
-
     // ── Utility ───────────────────────────────────────────────────────────────
 
     public String getDisplayName() {

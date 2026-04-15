@@ -153,4 +153,17 @@ public class PlayerService {
     private boolean isSet(String s) {
         return s != null && !s.trim().isEmpty();
     }
+
+    /** Resolve a numeric player id string to a display name; falls back to the raw id if unknown. */
+    public String getDisplayNameOrId(String playerIdStr) {
+        if (playerIdStr == null || playerIdStr.isBlank())
+            return playerIdStr;
+        try {
+            long id = Long.parseLong(playerIdStr.trim());
+            Player p = playerRepo.get(id);
+            return p != null ? p.getDisplayName() : playerIdStr;
+        } catch (NumberFormatException e) {
+            return playerIdStr;
+        }
+    }
 }
