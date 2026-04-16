@@ -15,7 +15,7 @@ public class Main {
     static Player[] playerList = new Player[100];
     static FriendRequest[] requestList = new FriendRequest[200];
     static Chat[] chatList = new Chat[100];
-    static Team[] teamList = new Team[50];
+    static Team[] teamList = new Team[100];
     static GameSession[] sessionList = new GameSession[100];
     static Rating[] ratingList = new Rating[200];
     static Payment[] paymentList = new Payment[200];
