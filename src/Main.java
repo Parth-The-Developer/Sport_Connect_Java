@@ -31,6 +31,9 @@ public static void main(String[] args) {
     sc.close();
 }
 
+// export SMTP_SENDER_EMAIL=tp025060@gmail.com
+// export SMTP_APP_PASSWORD=qxiendwaczuoygsp
+
 // ─────────────────────────────────────────────
 
 static void mainMenu() {
