@@ -7,7 +7,50 @@ import model.Booking;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
+/**
+ * Session and booking logic. Result codes are {@code String} constants (no nested enums)
+ * so compilation produces a single {@code GameSessionService.class} file.
+ */
 public class GameSessionService {
+
+    public static final String R_BOOK_SUCCESS = "BOOK_SUCCESS";
+    public static final String R_BOOK_SESSION_NOT_FOUND = "SESSION_NOT_FOUND";
+    public static final String R_BOOK_TEAM_NOT_FOUND = "TEAM_NOT_FOUND";
+    public static final String R_BOOK_NOT_TEAM_MEMBER = "NOT_TEAM_MEMBER";
+    public static final String R_BOOK_FAILED = "BOOKING_FAILED";
+
+    public static final String R_CANCEL_SESSION_SUCCESS = "CANCEL_SESSION_SUCCESS";
+    public static final String R_CANCEL_SESSION_NOT_FOUND = "CANCEL_SESSION_NOT_FOUND";
+    public static final String R_CANCEL_SESSION_TEAM_NOT_FOUND = "CANCEL_SESSION_TEAM_NOT_FOUND";
+    public static final String R_CANCEL_SESSION_NOT_CAPTAIN = "CANCEL_SESSION_NOT_CAPTAIN";
+    public static final String R_CANCEL_SESSION_ALREADY_CANCELLED = "CANCEL_SESSION_ALREADY_CANCELLED";
+
+    public static final String R_CANCEL_BOOKING_NOT_FOUND = "CANCEL_BOOKING_NOT_FOUND";
+    public static final String R_CANCEL_BOOKING_TEAM_NOT_FOUND = "CANCEL_BOOKING_TEAM_NOT_FOUND";
+    public static final String R_CANCEL_BOOKING_NOT_CAPTAIN = "CANCEL_BOOKING_NOT_CAPTAIN";
+    public static final String R_CANCEL_BOOKING_SUCCESS = "CANCEL_BOOKING_SUCCESS";
+    public static final String R_CANCEL_BOOKING_FAILED = "CANCEL_BOOKING_FAILED";
+
+    public static final String R_BOOK_FOR_MEMBER_TEAM_NOT_FOUND = "BOOK_FOR_MEMBER_TEAM_NOT_FOUND";
+    public static final String R_BOOK_FOR_MEMBER_NOT_MEMBER = "BOOK_FOR_MEMBER_NOT_MEMBER";
+    public static final String R_BOOK_FOR_MEMBER_FAILED = "BOOK_FOR_MEMBER_FAILED";
+    public static final String R_BOOK_FOR_MEMBER_SUCCESS = "BOOK_FOR_MEMBER_SUCCESS";
+
+    public static final String R_CANCEL_RELATED_NOT_FOUND = "CANCEL_RELATED_NOT_FOUND";
+    public static final String R_CANCEL_RELATED_ALREADY_CANCELLED = "CANCEL_RELATED_ALREADY_CANCELLED";
+    public static final String R_CANCEL_RELATED_SUCCESS = "CANCEL_RELATED_SUCCESS";
+
+    public static final String R_COMPLETE_NOT_FOUND = "COMPLETE_NOT_FOUND";
+    public static final String R_COMPLETE_ALREADY_CANCELLED = "COMPLETE_ALREADY_CANCELLED";
+    public static final String R_COMPLETE_ALREADY_COMPLETED = "COMPLETE_ALREADY_COMPLETED";
+    public static final String R_COMPLETE_SUCCESS = "COMPLETE_SUCCESS";
+
+    public static final String R_COMPLETE_AUTH_SESSION_NOT_FOUND = "COMPLETE_AUTH_SESSION_NOT_FOUND";
+    public static final String R_COMPLETE_AUTH_TEAM_NOT_FOUND = "COMPLETE_AUTH_TEAM_NOT_FOUND";
+    public static final String R_COMPLETE_AUTH_NOT_CAPTAIN = "COMPLETE_AUTH_NOT_CAPTAIN";
+    public static final String R_COMPLETE_AUTH_ALREADY_CANCELLED = "COMPLETE_AUTH_ALREADY_CANCELLED";
+    public static final String R_COMPLETE_AUTH_ALREADY_COMPLETED = "COMPLETE_AUTH_ALREADY_COMPLETED";
+    public static final String R_COMPLETE_AUTH_SUCCESS = "COMPLETE_AUTH_SUCCESS";
 
     private ArrayList<GameSession> sessions = new ArrayList<>();
     private ArrayList<Booking> bookings = new ArrayList<>();
@@ -17,8 +60,8 @@ public class GameSessionService {
     private TeamService teamService;
 
     public GameSessionService(TeamService teamService) {
-    this.teamService = teamService;
-    }   
+        this.teamService = teamService;
+    }
 
     public GameSession createSession(String teamId, String sport, LocalDate date, String time, String venue) {
 
@@ -38,6 +81,36 @@ public class GameSessionService {
         return s;
     }
 
+    /** Last error for {@link #createSessionForTeamMember}; null if none. */
+    private String lastCreateSessionForMemberError;
+
+    public String getLastCreateSessionForMemberError() {
+        return lastCreateSessionForMemberError;
+    }
+
+    /**
+     * Creates a session for a team when the actor is a member. Returns session or null;
+     * on null, see {@link #getLastCreateSessionForMemberError()}.
+     */
+    public GameSession createSessionForTeamMember(String actorPlayerId, String teamId, LocalDate date, String time, String venue) {
+        lastCreateSessionForMemberError = null;
+        Team team = teamService.getTeamByID(teamId);
+        if (team == null) {
+            lastCreateSessionForMemberError = "TEAM_NOT_FOUND";
+            return null;
+        }
+        if (!team.getMemberIDs().contains(actorPlayerId)) {
+            lastCreateSessionForMemberError = "NOT_TEAM_MEMBER";
+            return null;
+        }
+        GameSession session = createSession(teamId, team.getSport(), date, time, venue);
+        if (session == null) {
+            lastCreateSessionForMemberError = "INVALID_DATE_OR_CONFLICT";
+            return null;
+        }
+        return session;
+    }
+
     public Booking bookSession(String sessionID, String teamID) {
 
         GameSession session = getSessionByID(sessionID);
@@ -45,7 +118,6 @@ public class GameSessionService {
 
         if (session == null || team == null) return null;
 
-        // SPORT CHECK (MOVED HERE)
         if (!team.getSport().equalsIgnoreCase(session.getSport())) {
             return null;
         }
@@ -66,6 +138,16 @@ public class GameSessionService {
         return b;
     }
 
+    public String bookSession(String actorPlayerId, String sessionID, String teamID) {
+        GameSession session = getSessionByID(sessionID);
+        if (session == null) return R_BOOK_SESSION_NOT_FOUND;
+        Team team = teamService.getTeamByID(teamID);
+        if (team == null) return R_BOOK_TEAM_NOT_FOUND;
+        if (!team.getMemberIDs().contains(actorPlayerId)) return R_BOOK_NOT_TEAM_MEMBER;
+        Booking booking = bookSession(sessionID, teamID);
+        return booking != null ? R_BOOK_SUCCESS : R_BOOK_FAILED;
+    }
+
     public boolean cancelBooking(String id) {
         for (Booking b : bookings) {
             if (b.getBookingID().equalsIgnoreCase(id)) {
@@ -76,60 +158,37 @@ public class GameSessionService {
         return false;
     }
 
-    public enum CancelBookingAuthResult {
-        BOOKING_NOT_FOUND,
-        TEAM_NOT_FOUND,
-        NOT_CAPTAIN,
-        SUCCESS,
-        FAILED
-    }
-
-    /** Cancels a booking if the actor is admin or team captain for the booking's team. */
-    public CancelBookingAuthResult cancelBookingAuthorized(String bookingId, String actingPlayerId, boolean isAdmin) {
+    public String cancelBookingAuthorized(String bookingId, String actingPlayerId, boolean isAdmin) {
         Booking booking = getBookingByID(bookingId);
         if (booking == null)
-            return CancelBookingAuthResult.BOOKING_NOT_FOUND;
+            return R_CANCEL_BOOKING_NOT_FOUND;
         Team team = teamService.getTeamByID(booking.getTeamID());
         if (team == null)
-            return CancelBookingAuthResult.TEAM_NOT_FOUND;
+            return R_CANCEL_BOOKING_TEAM_NOT_FOUND;
         if (!isAdmin && !team.getCaptainID().equals(actingPlayerId))
-            return CancelBookingAuthResult.NOT_CAPTAIN;
-        return cancelBooking(bookingId) ? CancelBookingAuthResult.SUCCESS : CancelBookingAuthResult.FAILED;
+            return R_CANCEL_BOOKING_NOT_CAPTAIN;
+        return cancelBooking(bookingId) ? R_CANCEL_BOOKING_SUCCESS : R_CANCEL_BOOKING_FAILED;
     }
 
-    public enum BookSessionForMemberResult {
-        TEAM_NOT_FOUND,
-        NOT_TEAM_MEMBER,
-        BOOKING_FAILED,
-        SUCCESS
-    }
-
-    /** Books a session for a team only if the player is a member of that team. */
-    public BookSessionForMemberResult bookSessionForTeamMember(String sessionID, String teamID, String playerId) {
+    public String bookSessionForTeamMember(String sessionID, String teamID, String playerId) {
         Team team = teamService.getTeamByID(teamID);
         if (team == null)
-            return BookSessionForMemberResult.TEAM_NOT_FOUND;
+            return R_BOOK_FOR_MEMBER_TEAM_NOT_FOUND;
         if (!team.getMemberIDs().contains(playerId))
-            return BookSessionForMemberResult.NOT_TEAM_MEMBER;
+            return R_BOOK_FOR_MEMBER_NOT_MEMBER;
         Booking b = bookSession(sessionID, teamID);
-        return b != null ? BookSessionForMemberResult.SUCCESS : BookSessionForMemberResult.BOOKING_FAILED;
+        return b != null ? R_BOOK_FOR_MEMBER_SUCCESS : R_BOOK_FOR_MEMBER_FAILED;
     }
 
-    // This method searches for a booking using its ID
-    // It is used before operations like canceling a booking
-    // to ensure the booking exists and to retrieve its details
     public Booking getBookingByID(String id) {
 
-        // Loop through all bookings in the system
         for (Booking b : bookings) {
 
-            // Check if the booking ID matches the input (case-insensitive)
             if (b.getBookingID().equalsIgnoreCase(id)) {
                 return b;
             }
         }
 
-        // If no booking is found, return null
         return null;
     }
 
@@ -146,46 +205,81 @@ public class GameSessionService {
         return list;
     }
 
-    public enum CancelSessionResult {
-        NOT_FOUND,
-        ALREADY_CANCELLED,
-        SUCCESS
-    }
-
-    public enum CompleteSessionResult {
-        NOT_FOUND,
-        ALREADY_CANCELLED,
-        ALREADY_COMPLETED,
-        SUCCESS
-    }
-
-    /** Cancels the session and cancels all confirmed bookings for that session. */
-    public CancelSessionResult cancelSessionAndRelatedBookings(String sessionID) {
+    public String cancelSessionAndRelatedBookings(String sessionID) {
         GameSession s = getSessionByID(sessionID);
         if (s == null)
-            return CancelSessionResult.NOT_FOUND;
+            return R_CANCEL_RELATED_NOT_FOUND;
         if (s.getStatus() == GameSession.SessionStatus.CANCELLED)
-            return CancelSessionResult.ALREADY_CANCELLED;
+            return R_CANCEL_RELATED_ALREADY_CANCELLED;
         s.cancel();
         for (Booking b : bookings) {
             if (b.getSessionID().equalsIgnoreCase(sessionID) && b.getStatus() == Booking.Status.CONFIRMED)
                 b.cancelBooking();
         }
-        return CancelSessionResult.SUCCESS;
+        return R_CANCEL_RELATED_SUCCESS;
     }
 
-    public CompleteSessionResult completeSessionValidated(String sessionID) {
+    public String cancelSession(String sessionID, String actingPlayerId, boolean isAdmin) {
+        GameSession session = getSessionByID(sessionID);
+        if (session == null) return R_CANCEL_SESSION_NOT_FOUND;
+        Team team = teamService.getTeamByID(session.getTeamID());
+        if (team == null) return R_CANCEL_SESSION_TEAM_NOT_FOUND;
+        if (!isAdmin && !team.getCaptainID().equals(actingPlayerId)) return R_CANCEL_SESSION_NOT_CAPTAIN;
+
+        String result = cancelSessionAndRelatedBookings(sessionID);
+        if (R_CANCEL_RELATED_ALREADY_CANCELLED.equals(result)) return R_CANCEL_SESSION_ALREADY_CANCELLED;
+        return R_CANCEL_RELATED_SUCCESS.equals(result)
+                ? R_CANCEL_SESSION_SUCCESS
+                : R_CANCEL_SESSION_NOT_FOUND;
+    }
+
+    public String completeSessionValidated(String sessionID) {
         GameSession s = getSessionByID(sessionID);
         if (s == null)
-            return CompleteSessionResult.NOT_FOUND;
+            return R_COMPLETE_NOT_FOUND;
         if (s.getStatus() == GameSession.SessionStatus.CANCELLED)
-            return CompleteSessionResult.ALREADY_CANCELLED;
+            return R_COMPLETE_ALREADY_CANCELLED;
         if (s.getStatus() == GameSession.SessionStatus.COMPLETED)
-            return CompleteSessionResult.ALREADY_COMPLETED;
+            return R_COMPLETE_ALREADY_COMPLETED;
         s.markCompleted();
-        return CompleteSessionResult.SUCCESS;
-    }    
-    
+        return R_COMPLETE_SUCCESS;
+    }
+
+    public String completeSession(String sessionID, String actingPlayerId, boolean isAdmin) {
+        GameSession session = getSessionByID(sessionID);
+        if (session == null) return R_COMPLETE_AUTH_SESSION_NOT_FOUND;
+        Team team = teamService.getTeamByID(session.getTeamID());
+        if (team == null) return R_COMPLETE_AUTH_TEAM_NOT_FOUND;
+        if (!isAdmin && !team.getCaptainID().equals(actingPlayerId)) return R_COMPLETE_AUTH_NOT_CAPTAIN;
+
+        String result = completeSessionValidated(sessionID);
+        if (R_COMPLETE_NOT_FOUND.equals(result)) return R_COMPLETE_AUTH_SESSION_NOT_FOUND;
+        if (R_COMPLETE_ALREADY_CANCELLED.equals(result)) return R_COMPLETE_AUTH_ALREADY_CANCELLED;
+        if (R_COMPLETE_ALREADY_COMPLETED.equals(result)) return R_COMPLETE_AUTH_ALREADY_COMPLETED;
+        if (R_COMPLETE_SUCCESS.equals(result)) return R_COMPLETE_AUTH_SUCCESS;
+        return R_COMPLETE_AUTH_SESSION_NOT_FOUND;
+    }
+
+    public ArrayList<GameSession> getSessionsByTeam(String teamId) {
+        ArrayList<GameSession> result = new ArrayList<>();
+        for (GameSession s : sessions) {
+            if (s.getTeamID().equalsIgnoreCase(teamId)) {
+                result.add(s);
+            }
+        }
+        return result;
+    }
+
+    public ArrayList<Booking> getBookingsBySession(String sessionId) {
+        ArrayList<Booking> result = new ArrayList<>();
+        for (Booking b : bookings) {
+            if (b.getSessionID().equalsIgnoreCase(sessionId)) {
+                result.add(b);
+            }
+        }
+        return result;
+    }
+
     public ArrayList<GameSession> getAllSessions() {
         return sessions;
     }

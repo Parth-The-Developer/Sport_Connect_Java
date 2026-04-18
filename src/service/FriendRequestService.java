@@ -17,11 +17,18 @@ import java.util.stream.Collectors;
 
 public class FriendRequestService {
 
+    public static final String RESPOND_SUCCESS = "SUCCESS";
+    public static final String RESPOND_REQUEST_NOT_FOUND = "REQUEST_NOT_FOUND";
+    public static final String RESPOND_INVALID_REQUEST = "INVALID_REQUEST";
+    public static final String RESPOND_FAILED = "FAILED";
+
     private static final Path STORAGE_FILE = Paths.get("data", "friend_requests.txt");
     private final List<FriendRequest> requests = new ArrayList<>();
     private final EmailService emailService = new EmailService();
+    private final PlayerService playerService;
 
-    public FriendRequestService() {
+    public FriendRequestService(PlayerService playerService) {
+        this.playerService = playerService;
         loadFromFile();
     }
 
@@ -62,6 +69,17 @@ public class FriendRequestService {
         return request;
     }
 
+    /** Convenience wrapper: loads players by ID and delegates to {@link #sendRequest(Player, Player)}. */
+    public FriendRequest sendFriendRequest(Long senderId, Long receiverId) {
+        Player sender = playerService.getPlayerById(senderId);
+        Player receiver = playerService.getPlayerById(receiverId);
+        return sendRequest(sender, receiver);
+    }
+
+    public List<FriendRequest> viewIncomingRequests(Long userId) {
+        return getIncomingRequests(userId);
+    }
+
     public List<FriendRequest> getIncomingRequests(Long playerId) {
         String id = String.valueOf(playerId);
         return requests.stream()
@@ -98,6 +116,32 @@ public class FriendRequestService {
 
         saveToFile();
         return request;
+    }
+
+    public String acceptFriendRequest(String requestId, Long currentPlayerId) {
+        return respondToFriendRequest(requestId, currentPlayerId, true);
+    }
+
+    public String rejectFriendRequest(String requestId, Long currentPlayerId) {
+        return respondToFriendRequest(requestId, currentPlayerId, false);
+    }
+
+    private String respondToFriendRequest(String requestId, Long currentPlayerId, boolean accept) {
+        try {
+            FriendRequest updated = respondToRequest(requestId, currentPlayerId, accept);
+            if (accept) {
+                Player requester = playerService.getPlayerById(Long.parseLong(updated.getFromPlayerID()));
+                Player acceptedBy = playerService.getPlayerById(currentPlayerId);
+                sendAcceptanceEmail(acceptedBy, requester);
+            }
+            return RESPOND_SUCCESS;
+        } catch (IllegalArgumentException ex) {
+            String message = ex.getMessage() == null ? "" : ex.getMessage().toLowerCase();
+            if (message.contains("not found")) return RESPOND_REQUEST_NOT_FOUND;
+            return RESPOND_INVALID_REQUEST;
+        } catch (Exception ex) {
+            return RESPOND_FAILED;
+        }
     }
 
     public boolean isFriendshipAccepted(Long playerAId, Long playerBId) {

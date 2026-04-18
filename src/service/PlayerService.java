@@ -29,6 +29,19 @@ public class PlayerService {
         return player;
     }
 
+    /**
+     * Loads a player from persistence with a fixed ID. Skips if that email or ID is already present.
+     */
+    public void restorePersistedPlayer(Player player) {
+        if (player == null || player.getPlayerId() == null || player.getPlayerId() <= 0) return;
+        if (playerRepo.containsKey(player.getPlayerId())) return;
+        if (playerExistsByEmail(player.getEmail())) return;
+        if (player.getCreatedAt() == null) player.setCreatedAt(LocalDateTime.now());
+        if (player.getUpdatedAt() == null) player.setUpdatedAt(LocalDateTime.now());
+        playerRepo.put(player.getPlayerId(), player);
+        if (player.getPlayerId() >= idCounter) idCounter = player.getPlayerId() + 1;
+    }
+
     // ── Read ──────────────────────────────────────────────────────────────────
 
     public List<Player> getAllPlayers() {
@@ -66,10 +79,27 @@ public class PlayerService {
                 .collect(Collectors.toList());
     }
 
+    public List<Player> searchBySport(String sport) {
+        return getPlayersBySport(sport);
+    }
+
     public List<Player> getPlayersBySkillLevel(String skillLevel) {
         if (!isSet(skillLevel)) throw new IllegalArgumentException("Skill level cannot be empty");
         return playerRepo.values().stream()
                 .filter(p -> skillLevel.equalsIgnoreCase(p.getSkill_level()) && p.isActive())
+                .collect(Collectors.toList());
+    }
+
+    public List<Player> searchBySkill(String skillLevel) {
+        return getPlayersBySkillLevel(skillLevel);
+    }
+
+    public List<Player> searchByName(String name) {
+        if (!isSet(name)) throw new IllegalArgumentException("Name cannot be empty");
+        String keyword = name.trim().toLowerCase();
+        return playerRepo.values().stream()
+                .filter(Player::isActive)
+                .filter(p -> p.getName() != null && p.getName().toLowerCase().contains(keyword))
                 .collect(Collectors.toList());
     }
 

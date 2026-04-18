@@ -4,23 +4,46 @@ import model.Player;
 import model.Team;
 import java.util.ArrayList;
 
+/**
+ * Team operations. Result codes for richer APIs are {@code String} constants (no nested enums)
+ * so compilation produces a single {@code TeamService.class} file.
+ */
 public class TeamService {
+
+    public static final String R_ADD_TEAM_NOT_FOUND = "TEAM_NOT_FOUND";
+    public static final String R_ADD_NOT_CAPTAIN = "ACTOR_NOT_CAPTAIN";
+    public static final String R_ADD_PLAYER_NOT_FOUND = "PLAYER_NOT_FOUND";
+    public static final String R_ADD_ALREADY_MEMBER = "ALREADY_MEMBER";
+    public static final String R_ADD_TEAM_FULL = "TEAM_FULL";
+    public static final String R_ADD_SPORT_MISMATCH = "SPORT_MISMATCH";
+    public static final String R_ADD_SUCCESS = "SUCCESS";
+
+    public static final String R_REMOVE_TEAM_NOT_FOUND = "TEAM_NOT_FOUND";
+    public static final String R_REMOVE_NOT_CAPTAIN = "NOT_CAPTAIN";
+    public static final String R_REMOVE_CAPTAIN_SELF = "CAPTAIN_CANNOT_REMOVE_SELF";
+    public static final String R_REMOVE_NOT_IN_TEAM = "PLAYER_NOT_IN_TEAM";
+    public static final String R_REMOVE_SUCCESS = "SUCCESS";
+
+    public static final String R_LEAVE_TEAM_NOT_FOUND = "TEAM_NOT_FOUND";
+    public static final String R_LEAVE_NOT_IN_TEAM = "PLAYER_NOT_IN_TEAM";
+    public static final String R_LEAVE_SUCCESS = "SUCCESS";
+
+    public static final String R_DELETE_TEAM_NOT_FOUND = "TEAM_NOT_FOUND";
+    public static final String R_DELETE_NOT_CAPTAIN = "NOT_CAPTAIN";
+    public static final String R_DELETE_SUCCESS = "SUCCESS";
 
     private ArrayList<Team> teams = new ArrayList<>();
     private int teamCounter = 1;
     private PlayerService playerService;
 
     public TeamService(PlayerService playerService) {
-    this.playerService = playerService;
+        this.playerService = playerService;
     }
 
     public Team createTeam(String name, String sport, String captainID) {
-
         String id = "T" + teamCounter++;
-
         Team team = new Team(id, name, sport, captainID);
         teams.add(team);
-
         return team;
     }
 
@@ -73,6 +96,16 @@ public class TeamService {
         return playerSport.equalsIgnoreCase(teamSport);
     }
 
+    public ArrayList<Team> getTeamsForPlayer(String playerId) {
+        ArrayList<Team> result = new ArrayList<>();
+        for (Team t : teams) {
+            if (t.getMemberIDs().contains(playerId)) {
+                result.add(t);
+            }
+        }
+        return result;
+    }
+
     // ================= LEAVE TEAM =================
     public boolean leaveTeam(String playerId, String teamID) {
 
@@ -110,26 +143,35 @@ public class TeamService {
         return teams.removeIf(t -> t.getTeamID().equalsIgnoreCase(teamID));
     }
 
-    public enum RemoveMemberResult {
-        TEAM_NOT_FOUND,
-        NOT_CAPTAIN,
-        CAPTAIN_CANNOT_REMOVE_SELF,
-        PLAYER_NOT_IN_TEAM,
-        SUCCESS
+    public String addPlayerToTeam(String teamId, String actorCaptainId, String targetPlayerId) {
+        Team team = getTeamByID(teamId);
+        if (team == null) return R_ADD_TEAM_NOT_FOUND;
+        if (!team.getCaptainID().equals(actorCaptainId)) return R_ADD_NOT_CAPTAIN;
+
+        Long targetIdLong = parsePlayerId(targetPlayerId);
+        if (targetIdLong == null) return R_ADD_PLAYER_NOT_FOUND;
+        Player player = playerService.getPlayerById(targetIdLong);
+        if (player == null) return R_ADD_PLAYER_NOT_FOUND;
+        if (team.getMemberIDs().contains(targetPlayerId)) return R_ADD_ALREADY_MEMBER;
+        if (team.getMemberIDs().size() >= Team.MAX_MEMBERS) return R_ADD_TEAM_FULL;
+        if (!isSportCompatible(player.getSport(), team.getSport())) return R_ADD_SPORT_MISMATCH;
+
+        team.addMember(targetPlayerId);
+        return R_ADD_SUCCESS;
     }
 
     /** Captain removes another member (cannot remove self). */
-    public RemoveMemberResult removeMemberAsCaptain(String teamId, String captainPlayerId, String targetPlayerId) {
+    public String removeMemberAsCaptain(String teamId, String captainPlayerId, String targetPlayerId) {
         Team team = getTeamByID(teamId);
         if (team == null)
-            return RemoveMemberResult.TEAM_NOT_FOUND;
+            return R_REMOVE_TEAM_NOT_FOUND;
         if (!team.getCaptainID().equals(captainPlayerId))
-            return RemoveMemberResult.NOT_CAPTAIN;
+            return R_REMOVE_NOT_CAPTAIN;
         if (captainPlayerId.equals(targetPlayerId))
-            return RemoveMemberResult.CAPTAIN_CANNOT_REMOVE_SELF;
+            return R_REMOVE_CAPTAIN_SELF;
         if (!team.getMemberIDs().contains(targetPlayerId))
-            return RemoveMemberResult.PLAYER_NOT_IN_TEAM;
-        return team.removeMember(targetPlayerId) ? RemoveMemberResult.SUCCESS : RemoveMemberResult.PLAYER_NOT_IN_TEAM;
+            return R_REMOVE_NOT_IN_TEAM;
+        return team.removeMember(targetPlayerId) ? R_REMOVE_SUCCESS : R_REMOVE_NOT_IN_TEAM;
     }
 
     /** Admin removes a player from a team (same rules as {@link Team#removeMember}). */
@@ -142,6 +184,25 @@ public class TeamService {
         return team.removeMember(playerId);
     }
 
-    public enum JoinTeamResult { SUCCESS, TEAM_NOT_FOUND, PLAYER_NOT_FOUND, ALREADY_MEMBER, TEAM_FULL, SPORT_MISMATCH
+    public String leaveTeamSafe(String playerId, String teamID) {
+        Team team = getTeamByID(teamID);
+        if (team == null) return R_LEAVE_TEAM_NOT_FOUND;
+        if (!team.getMemberIDs().contains(playerId)) return R_LEAVE_NOT_IN_TEAM;
+        return leaveTeam(playerId, teamID) ? R_LEAVE_SUCCESS : R_LEAVE_NOT_IN_TEAM;
+    }
+
+    public String deleteTeamAsCaptain(String teamId, String captainPlayerId) {
+        Team team = getTeamByID(teamId);
+        if (team == null) return R_DELETE_TEAM_NOT_FOUND;
+        if (!team.getCaptainID().equals(captainPlayerId)) return R_DELETE_NOT_CAPTAIN;
+        return deleteTeam(teamId) ? R_DELETE_SUCCESS : R_DELETE_TEAM_NOT_FOUND;
+    }
+
+    private Long parsePlayerId(String text) {
+        try {
+            return Long.parseLong(text);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
