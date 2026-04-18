@@ -137,143 +137,143 @@ public class Main {
         }
     }
 
-    // /**
-    //  * Read a valid sport name — loops until correct.
-    //  */
-    // static String readSport() {
-    //     while (true) {
-    //         System.out.println("  Valid sports: Football | Tennis | Basketball | Cricket | Badminton | Volleyball");
-    //         prompt("Sport");
-    //         String input = scanner.nextLine().trim();
-    //         for (String s : VALID_SPORTS) {
-    //             if (s.equalsIgnoreCase(input)) {
-    //                 return s;
-    //             }
-    //         }
-    //         error("Invalid sport '" + input + "'. Choose from: Football, Tennis, Basketball, Cricket, Badminton, Volleyball.");
-    //     }
-    // }
+    /**
+     * Read a valid sport name — loops until correct.
+     */
+    static String readSport() {
+        while (true) {
+            System.out.println("  Valid sports: Football | Tennis | Basketball | Cricket | Badminton | Volleyball");
+            prompt("Sport");
+            String input = scanner.nextLine().trim();
+            for (String s : VALID_SPORTS) {
+                if (s.equalsIgnoreCase(input)) {
+                    return s;
+                }
+            }
+            error("Invalid sport '" + input + "'. Choose from: Football, Tennis, Basketball, Cricket, Badminton, Volleyball.");
+        }
+    }
 
-    // /**
-    //  * Read a valid skill level — loops until correct.
-    //  */
-    // static SkillLevel readSkillLevel() {
-    //     while (true) {
-    //         System.out.println("  Valid levels: BEGINNER | INTERMEDIATE | ADVANCED");
-    //         prompt("Skill Level");
-    //         String input = scanner.nextLine().trim().toUpperCase();
-    //         switch (input) {
-    //             case "BEGINNER":
-    //                 return SkillLevel.BEGINNER;
-    //             case "INTERMEDIATE":
-    //                 return SkillLevel.INTERMEDIATE;
-    //             case "ADVANCED":
-    //                 return SkillLevel.ADVANCED;
-    //             default:
-    //                 error("Invalid skill level '" + input + "'. Enter BEGINNER, INTERMEDIATE or ADVANCED.");
-    //         }
-    //     }
-    // }
+    /**
+     * Read a valid skill level — loops until correct.
+     */
+    static SkillLevel readSkillLevel() {
+        while (true) {
+            System.out.println("  Valid levels: BEGINNER | INTERMEDIATE | ADVANCED");
+            prompt("Skill Level");
+            String input = scanner.nextLine().trim().toUpperCase();
+            switch (input) {
+                case "BEGINNER":
+                    return SkillLevel.BEGINNER;
+                case "INTERMEDIATE":
+                    return SkillLevel.INTERMEDIATE;
+                case "ADVANCED":
+                    return SkillLevel.ADVANCED;
+                default:
+                    error("Invalid skill level '" + input + "'. Enter BEGINNER, INTERMEDIATE or ADVANCED.");
+            }
+        }
+    }
 
-    // /**
-    //  * Read an optional skill level — null means 'search all'.
-    //  */
-    // static SkillLevel readSkillLevelOptional() {
-    //     while (true) {
-    //         System.out.println("  Valid levels: BEGINNER | INTERMEDIATE | ADVANCED  (or press Enter for all)");
-    //         prompt("Skill Level");
-    //         String input = scanner.nextLine().trim().toUpperCase();
-    //         if (input.isEmpty()) {
-    //             return null;
-    //         }
-    //         switch (input) {
-    //             case "BEGINNER":
-    //                 return SkillLevel.BEGINNER;
-    //             case "INTERMEDIATE":
-    //                 return SkillLevel.INTERMEDIATE;
-    //             case "ADVANCED":
-    //                 return SkillLevel.ADVANCED;
-    //             default:
-    //                 error("Invalid level '" + input + "'. Enter BEGINNER, INTERMEDIATE, ADVANCED or press Enter.");
-    //         }
-    //     }
-    // }
+    /**
+     * Read an optional skill level — null means 'search all'.
+     */
+    static SkillLevel readSkillLevelOptional() {
+        while (true) {
+            System.out.println("  Valid levels: BEGINNER | INTERMEDIATE | ADVANCED  (or press Enter for all)");
+            prompt("Skill Level");
+            String input = scanner.nextLine().trim().toUpperCase();
+            if (input.isEmpty()) {
+                return null;
+            }
+            switch (input) {
+                case "BEGINNER":
+                    return SkillLevel.BEGINNER;
+                case "INTERMEDIATE":
+                    return SkillLevel.INTERMEDIATE;
+                case "ADVANCED":
+                    return SkillLevel.ADVANCED;
+                default:
+                    error("Invalid level '" + input + "'. Enter BEGINNER, INTERMEDIATE, ADVANCED or press Enter.");
+            }
+        }
+    }
 
-    // /**
-    //  * Read integer between min and max (inclusive) — loops until valid.
-    //  */
-    // static int readInt(String label, int min, int max) {
-    //     while (true) {
-    //         prompt(label);
-    //         String input = scanner.nextLine().trim();
-    //         try {
-    //             int val = Integer.parseInt(input);
-    //             if (val >= min && val <= max) {
-    //                 return val;
-    //             }
-    //             error("Please enter a number between " + min + " and " + max + ".");
-    //         } catch (NumberFormatException e) {
-    //             error("Invalid input '" + input + "'. Please enter a whole number.");
-    //         }
-    //     }
-    // }
+    /**
+     * Read integer between min and max (inclusive) — loops until valid.
+     */
+    static int readInt(String label, int min, int max) {
+        while (true) {
+            prompt(label);
+            String input = scanner.nextLine().trim();
+            try {
+                int val = Integer.parseInt(input);
+                if (val >= min && val <= max) {
+                    return val;
+                }
+                error("Please enter a number between " + min + " and " + max + ".");
+            } catch (NumberFormatException e) {
+                error("Invalid input '" + input + "'. Please enter a whole number.");
+            }
+        }
+    }
 
-    // /**
-    //  * Read a positive decimal number — loops until valid.
-    //  */
-    // static double readAmount(String label) {
-    //     while (true) {
-    //         prompt(label + " ($)");
-    //         String input = scanner.nextLine().trim();
-    //         try {
-    //             double val = Double.parseDouble(input);
-    //             if (val > 0) {
-    //                 return val;
-    //             }
-    //             error("Amount must be greater than $0.00.");
-    //         } catch (NumberFormatException e) {
-    //             error("Invalid amount '" + input + "'. Enter a number like 20 or 15.50.");
-    //         }
-    //     }
-    // }
+    /**
+     * Read a positive decimal number — loops until valid.
+     */
+    static double readAmount(String label) {
+        while (true) {
+            prompt(label + " ($)");
+            String input = scanner.nextLine().trim();
+            try {
+                double val = Double.parseDouble(input);
+                if (val > 0) {
+                    return val;
+                }
+                error("Amount must be greater than $0.00.");
+            } catch (NumberFormatException e) {
+                error("Invalid amount '" + input + "'. Enter a number like 20 or 15.50.");
+            }
+        }
+    }
 
-    // /**
-    //  * Read payment method — loops until CARD or PAYPAL.
-    //  */
-    // static PaymentMethod readPaymentMethod() {
-    //     while (true) {
-    //         System.out.println("  Methods: CARD | PAYPAL");
-    //         prompt("Payment Method");
-    //         String input = scanner.nextLine().trim().toUpperCase();
-    //         switch (input) {
-    //             case "CARD":
-    //                 return PaymentMethod.CARD;
-    //             case "PAYPAL":
-    //                 return PaymentMethod.PAYPAL;
-    //             default:
-    //                 error("Invalid method '" + input + "'. Enter CARD or PAYPAL.");
-    //         }
-    //     }
-    // }
+    /**
+     * Read payment method — loops until CARD or PAYPAL.
+     */
+    static PaymentMethod readPaymentMethod() {
+        while (true) {
+            System.out.println("  Methods: CARD | PAYPAL");
+            prompt("Payment Method");
+            String input = scanner.nextLine().trim().toUpperCase();
+            switch (input) {
+                case "CARD":
+                    return PaymentMethod.CARD;
+                case "PAYPAL":
+                    return PaymentMethod.PAYPAL;
+                default:
+                    error("Invalid method '" + input + "'. Enter CARD or PAYPAL.");
+            }
+        }
+    }
 
-    // /**
-    //  * Read a date in YYYY-MM-DD format — loops until format is correct.
-    //  */
-    // static String readDate() {
-    //     while (true) {
-    //         prompt("Date (YYYY-MM-DD)");
-    //         String input = scanner.nextLine().trim();
-    //         if (input.matches("\\d{4}-\\d{2}-\\d{2}")) {
-    //             String[] p = input.split("-");
-    //             int m = Integer.parseInt(p[1]);
-    //             int d = Integer.parseInt(p[2]);
-    //             if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
-    //                 return input;
-    //             }
-    //         }
-    //         error("Invalid date '" + input + "'. Use format YYYY-MM-DD (e.g. 2026-05-20).");
-    //     }
-    // }
+    /**
+     * Read a date in YYYY-MM-DD format — loops until format is correct.
+     */
+    static String readDate() {
+        while (true) {
+            prompt("Date (YYYY-MM-DD)");
+            String input = scanner.nextLine().trim();
+            if (input.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                String[] p = input.split("-");
+                int m = Integer.parseInt(p[1]);
+                int d = Integer.parseInt(p[2]);
+                if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+                    return input;
+                }
+            }
+            error("Invalid date '" + input + "'. Use format YYYY-MM-DD (e.g. 2026-05-20).");
+        }
+    }
 
     /**
      * Read a menu choice from a fixed set — loops until valid.
