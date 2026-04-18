@@ -19,7 +19,7 @@ public class Main {
     static final AuthService authService = new AuthService();
     static final PlayerService playerService = new PlayerService();
     static final TeamService teamService = new TeamService(playerService);
-    static final GameSessionService gameSessionService = new GameSessionService(teamService);;
+    static final GameSessionService gameSessionService = new GameSessionService(teamService);
 
     // ================= SESSION =================
     static Player loggedInPlayer = null;
@@ -27,9 +27,10 @@ public class Main {
     static String sessionToken = null;
 
     static final Scanner sc = new Scanner(System.in);
+    private static final ConsoleUi ui = new ConsoleUi(sc);
 
     public static void main(String[] args) {
-        seedData();
+        SeedData.seed(authService, playerService);
         mainMenu();
         sc.close();
     }
@@ -39,16 +40,16 @@ public class Main {
     // =====================================================
     static void mainMenu() {
         while (true) {
-            printBanner();
+            ui.printBanner();
             System.out.println("  1. Player Portal");
             System.out.println("  2. Admin Portal");
             System.out.println("  0. Exit");
             System.out.print("\n  Choice: ");
-            switch (readInt()) {
+            switch (ui.readInt()) {
                 case 1 -> playerPortal();
                 case 2 -> adminPortal();
                 case 0 -> { System.out.println("\n  Goodbye!\n"); return; }
-                default -> warn("Invalid option.");
+                default -> ui.warn("Invalid option.");
             }
         }
     }
@@ -59,17 +60,17 @@ public class Main {
     static void playerPortal() {
 
         while (true) {
-            printHeader("Player Portal");
+            ui.printHeader("Player Portal");
             if (loggedInPlayer == null) {
                 System.out.println("  1. Sign Up");
                 System.out.println("  2. Log In");
                 System.out.println("  0. Back");
                 System.out.print("\n  Choice: ");
-                switch (readInt()) {
+                switch (ui.readInt()) {
                     case 1 -> playerSignUp();
                     case 2 -> playerLogin();
                     case 0 -> { return; }
-                    default -> warn("Invalid option.");
+                    default -> ui.warn("Invalid option.");
                 }
 
             } else {
@@ -90,18 +91,18 @@ public class Main {
 
                 System.out.print("\n  Choice: ");
 
-                switch (readInt()) {
+                switch (ui.readInt()) {
                     case 1 -> viewMyProfile();
                     case 2 -> updateMyProfile();
                     case 3 -> searchBySport();
                     case 4 -> searchBySkill();
                     case 5 -> searchByCity();
-                    case 6, 7 -> stub("Parth's module — coming Week 2");
+                    case 6, 7 -> ui.stub("Parth's module — coming Week 2");
                     case 8 -> viewMyTeams();
                     case 9 -> gameHub();
-                    case 10    -> stub("Dhruv's module — coming Week 3");
+                    case 10    -> ui.stub("Dhruv's module — coming Week 3");
                     case 0 -> { playerLogout(); return; }
-                    default -> warn("Invalid option");
+                    default -> ui.warn("Invalid option");
                 }
             }
         }
@@ -113,7 +114,7 @@ public class Main {
     static void gameHub() {
 
         while (true) {
-            printHeader("GAME HUB");
+            ui.printHeader("GAME HUB");
 
             System.out.println("  1. Create Team");
             System.out.println("  2. View Teams");
@@ -130,7 +131,7 @@ public class Main {
 
             System.out.print("\n  Choice: ");
 
-            switch (readInt()) {
+            switch (ui.readInt()) {
                 case 1 -> createTeam();
                 case 2 -> viewTeams();
                 case 3 -> joinTeam();
@@ -143,13 +144,13 @@ public class Main {
                 case 10 -> addPlayerToTeam();
                 case 11 -> captainRemovePlayer();
                 case 0 -> { return; }
-                default -> warn("Invalid option");
+                default -> ui.warn("Invalid option");
             }
         }
     }
 
     static void playerSignUp() {
-        printHeader("Player Sign Up");
+        ui.printHeader("Player Sign Up");
         try {
             System.out.print("  Full name    : "); String name  = sc.nextLine().trim();
             System.out.print("  Email        : "); String email = sc.nextLine().trim();
@@ -163,40 +164,40 @@ public class Main {
             System.out.print("  City         : "); player.setCity(sc.nextLine().trim());
             System.out.print("  Skill level\n  (BEGINNER / INTERMEDIATE / ADVANCED): ");
             player.setSkill_level(sc.nextLine().trim().toUpperCase());
-            System.out.print("  Age          : "); player.setAge(readIntInline());
-            System.out.print("  Experience (years) : "); player.setExperience(readIntInline());
+            System.out.print("  Age          : "); player.setAge(ui.readIntInline());
+            System.out.print("  Experience (years) : "); player.setExperience(ui.readIntInline());
 
             playerService.addPlayer(player);
             loggedInPlayer = player;
             sessionToken   = generateSessionToken(email, "PLAYER");
-            ok("Welcome to SportConnect, " + player.getDisplayName() + " (ID: " + loggedInPlayer.getPlayerId() + ")");
+            ui.ok("Welcome to SportConnect, " + player.getDisplayName() + " (ID: " + loggedInPlayer.getPlayerId() + ")");
         } catch (Exception e) {
-            warn("Sign-up failed: " + e.getMessage());
+            ui.warn("Sign-up failed: " + e.getMessage());
         }
     }
 
     static void playerLogin() {
-        printHeader("Player Log In");
+        ui.printHeader("Player Log In");
         try {
             System.out.print("  Email    : "); String email = sc.nextLine().trim();
             System.out.print("  Password : "); String pass  = sc.nextLine().trim();
             sessionToken   = authService.playerLogin(email, pass);
             loggedInPlayer = playerService.getPlayerByEmail(email);
-            ok("Welcome back, " + loggedInPlayer.getDisplayName() + " (ID: " + loggedInPlayer.getPlayerId() + ")");
+            ui.ok("Welcome back, " + loggedInPlayer.getDisplayName() + " (ID: " + loggedInPlayer.getPlayerId() + ")");
         } catch (Exception e) {
-            warn("Login failed: " + e.getMessage());
+            ui.warn("Login failed: " + e.getMessage());
         }
     }
 
     static void playerLogout() {
         authService.logout(sessionToken);
-        ok("Logged out. See you next time, " + loggedInPlayer.getDisplayName() + "!");
+        ui.ok("Logged out. See you next time, " + loggedInPlayer.getDisplayName() + "!");
         loggedInPlayer = null;
         sessionToken   = null;
     }
 
     static void viewMyProfile() {
-        printHeader("My Profile");
+        ui.printHeader("My Profile");
         Player p = loggedInPlayer;
         System.out.printf("  Name        : %s%n",     p.getName());
         System.out.printf("  Email       : %s%n",     p.getEmail());
@@ -208,11 +209,11 @@ public class Main {
         System.out.printf("  Experience  : %d yrs%n", p.getExperience());
         System.out.printf("  Rating      : %.1f%n",   p.getRating());
         System.out.printf("  Member since: %s%n",     p.getCreatedAt().toLocalDate());
-        pause();
+        ui.pause();
     }
 
     static void updateMyProfile() {
-        printHeader("Update My Profile");
+        ui.printHeader("Update My Profile");
         Player p = loggedInPlayer;
         try {
             System.out.print("  New Phone (Enter to skip)    : ");
@@ -237,29 +238,29 @@ public class Main {
             if (!bio.isEmpty()) p.setBio(bio);
 
             playerService.updatePlayer(p.getPlayerId(), p);
-            ok("Profile updated successfully!");
+            ui.ok("Profile updated successfully!");
         } catch (Exception e) {
-            warn("Update failed: " + e.getMessage());
+            ui.warn("Update failed: " + e.getMessage());
         }
     }
 
     static void searchBySport() {
-        printHeader("Search by Sport");
+        ui.printHeader("Search by Sport");
         System.out.print("  Enter sport: ");
-        printPlayerList(playerService.getPlayersBySport(sc.nextLine().trim()));
+        ui.printPlayerList(playerService.getPlayersBySport(sc.nextLine().trim()));
     }
 
     static void searchBySkill() {
-        printHeader("Search by Skill Level");
+        ui.printHeader("Search by Skill Level");
         System.out.println("  Options: BEGINNER | INTERMEDIATE | ADVANCED");
         System.out.print("  Enter level: ");
-        printPlayerList(playerService.getPlayersBySkillLevel(sc.nextLine().trim()));
+        ui.printPlayerList(playerService.getPlayersBySkillLevel(sc.nextLine().trim()));
     }
 
     static void searchByCity() {
-        printHeader("Search by City");
+        ui.printHeader("Search by City");
         System.out.print("  Enter city: ");
-        printPlayerList(playerService.getPlayersByCity(sc.nextLine().trim()));
+        ui.printPlayerList(playerService.getPlayersByCity(sc.nextLine().trim()));
     }
 
     // =====================================================
@@ -274,9 +275,9 @@ public class Main {
 
         while (true) {
 
-            printHeader("ADMIN PORTAL");
+            ui.printHeader("ADMIN PORTAL");
 
-            printHeader("Admin Portal — " + loggedInAdmin.getUsername()
+            ui.printHeader("Admin Portal — " + loggedInAdmin.getUsername()
                       + "  [" + loggedInAdmin.getRole() + "]");
             System.out.println("  1. List All Players");
             System.out.println("  2. Deactivate a Player");
@@ -290,65 +291,65 @@ public class Main {
 
             System.out.print("\n  Choice: ");
 
-            switch (readInt()) {
+            switch (ui.readInt()) {
                 case 1 -> adminListPlayers();
                 case 2 -> adminDeactivatePlayer();
                 case 3 -> adminActivatePlayer();
                 case 4 -> adminDeletePlayer();
-                case 5 -> stub("Refund system pending");
+                case 5 -> ui.stub("Refund system pending");
                 case 6 -> manageTeamsAdmin();
                 case 7 -> manageGameSessionsAdmin();
-                case 8 -> stub("Reports pending");
+                case 8 -> ui.stub("Reports pending");
                 case 0 -> { adminLogout(); return; }
-                default -> warn("Invalid option");
+                default -> ui.warn("Invalid option");
             }
         }
     }
 
     static void adminLogin() {
-        printHeader("Admin Login");
+        ui.printHeader("Admin Login");
         try {
             System.out.print("  Username : "); String user = sc.nextLine().trim();
             System.out.print("  Password : "); String pass = sc.nextLine().trim();
             sessionToken  = authService.adminLogin(user, pass);
             loggedInAdmin = authService.getAdminByUsername(user);
-            ok("Welcome, " + loggedInAdmin.getFullName() + "!");
+            ui.ok("Welcome, " + loggedInAdmin.getFullName() + "!");
         } catch (Exception e) {
-            warn("Admin login failed: " + e.getMessage());
+            ui.warn("Admin login failed: " + e.getMessage());
         }
     }
 
     static void adminLogout() {
         authService.logout(sessionToken);
-        ok("Admin session ended.");
+        ui.ok("Admin session ended.");
         loggedInAdmin = null;
         sessionToken  = null;
     }
 
     static void adminListPlayers() {
-        printHeader("All Players (" + playerService.getTotalPlayers() + " total)");
-        printPlayerList(playerService.getAllPlayers());
+        ui.printHeader("All Players (" + playerService.getTotalPlayers() + " total)");
+        ui.printPlayerList(playerService.getAllPlayers());
     }
 
     static void adminDeactivatePlayer() {
-        printHeader("Deactivate Player");
+        ui.printHeader("Deactivate Player");
         System.out.print("  Player ID: ");
-        try { playerService.deactivatePlayer((long) readIntInline()); ok("Player deactivated."); }
-        catch (Exception e) { warn(e.getMessage()); }
+        try { playerService.deactivatePlayer((long) ui.readIntInline()); ui.ok("Player deactivated."); }
+        catch (Exception e) { ui.warn(e.getMessage()); }
     }
 
     static void adminActivatePlayer() {
-        printHeader("Activate Player");
+        ui.printHeader("Activate Player");
         System.out.print("  Player ID: ");
-        try { playerService.activatePlayer((long) readIntInline()); ok("Player activated."); }
-        catch (Exception e) { warn(e.getMessage()); }
+        try { playerService.activatePlayer((long) ui.readIntInline()); ui.ok("Player activated."); }
+        catch (Exception e) { ui.warn(e.getMessage()); }
     }
 
     static void adminDeletePlayer() {
-        printHeader("Delete Player");
+        ui.printHeader("Delete Player");
         System.out.print("  Player ID: ");
-        try { playerService.deletePlayer((long) readIntInline()); ok("Player deleted."); }
-        catch (Exception e) { warn(e.getMessage()); }
+        try { playerService.deletePlayer((long) ui.readIntInline()); ui.ok("Player deleted."); }
+        catch (Exception e) { ui.warn(e.getMessage()); }
     } 
     
     // =====================================================
@@ -366,7 +367,7 @@ public class Main {
 
         // SPORT VALIDATION (NEW)
         if (!teamService.isSportCompatible(loggedInPlayer.getSport(), sport)) {
-            warn("You can only create teams for your own sport: " + playerSport);
+            ui.warn("You can only create teams for your own sport: " + playerSport);
             return;
         }
 
@@ -374,7 +375,7 @@ public class Main {
 
         Team t = teamService.createTeam(name, sport, captain);
 
-        ok("Team created: " + t.getTeamID());
+        ui.ok("Team created: " + t.getTeamID());
     }
 
     static void viewTeams() {
@@ -383,7 +384,7 @@ public class Main {
 
         //  NEW: handle empty case
         if (teams.isEmpty()) {
-            warn("No teams available.");
+            ui.warn("No teams available.");
             return;
         }
 
@@ -417,13 +418,13 @@ public class Main {
     // ==============================
     static void viewSessionsPlayer() {
 
-        printHeader("AVAILABLE SESSIONS");
+        ui.printHeader("AVAILABLE SESSIONS");
 
         List<GameSession> sessions = gameSessionService.getAllSessions();
 
         if (sessions.isEmpty()) {
-            warn("No available sessions at the moment.");
-            pause();
+            ui.warn("No available sessions at the moment.");
+            ui.pause();
             return;
         }
 
@@ -434,10 +435,10 @@ public class Main {
             System.out.println("  Date       : " + s.getDate());
             System.out.println("  Time       : " + s.getTime());
             System.out.println("  Venue      : " + s.getVenue());
-            System.out.println("  Status     : " + formatStatus(s.getStatus()));
+            System.out.println("  Status     : " + ui.formatStatus(s.getStatus()));
         }
 
-        pause();
+        ui.pause();
     }
 
     static void joinTeam() {
@@ -451,19 +452,19 @@ public class Main {
 
         switch (result) {
 
-            case "SUCCESS" -> ok("Player successfully added to team.");
+            case "SUCCESS" -> ui.ok("Player successfully added to team.");
 
-            case "TEAM_NOT_FOUND" -> warn("Team not found.");
+            case "TEAM_NOT_FOUND" -> ui.warn("Team not found.");
 
-            case "PLAYER_NOT_FOUND" -> warn("Player does not exist.");
+            case "PLAYER_NOT_FOUND" -> ui.warn("Player does not exist.");
 
-            case "ALREADY_MEMBER" -> warn("Player is already in this team.");
+            case "ALREADY_MEMBER" -> ui.warn("Player is already in this team.");
 
-            case "TEAM_FULL" -> warn("Team is full.");
+            case "TEAM_FULL" -> ui.warn("Team is full.");
 
-            case "SPORT_MISMATCH" -> warn("Cannot add player: sport does not match team.");
+            case "SPORT_MISMATCH" -> ui.warn("Cannot add player: sport does not match team.");
 
-            default -> warn("Unknown error occurred.");
+            default -> ui.warn("Unknown error occurred.");
         }
     }
 
@@ -474,10 +475,10 @@ public class Main {
 
         String playerId = String.valueOf(loggedInPlayer.getPlayerId());
 
-        boolean ok = teamService.leaveTeam(playerId, id);
+        boolean left = teamService.leaveTeam(playerId, id);
 
-        if (ok) ok("You left team, [" + id + "], no more a member");
-        else warn("Could not leave team (not a member or team not found).");
+        if (left) ui.ok("You left team, [" + id + "], no more a member");
+        else ui.warn("Could not leave team (not a member or team not found).");
     }
 
     static void addPlayerToTeam() {
@@ -488,7 +489,7 @@ public class Main {
         Team team = teamService.getTeamByID(teamId);
 
         if (team == null) {
-            warn("Team not found.");
+            ui.warn("Team not found.");
             return;
         }
 
@@ -496,7 +497,7 @@ public class Main {
 
         // Only captain can add players
         if (!team.getCaptainID().equals(currentUserId)) {
-            warn("Only the team captain can add players.");
+            ui.warn("Only the team captain can add players.");
             return;
         }
 
@@ -516,7 +517,7 @@ public class Main {
 
         // Prevent adding yourself again
         if (playerId.equals(currentUserId)) {
-            warn("You are already in the team.");
+            ui.warn("You are already in the team.");
             return;
         }
 
@@ -524,59 +525,40 @@ public class Main {
 
         switch (result) {
 
-            case "SUCCESS" -> ok("Player successfully added to team.");
+            case "SUCCESS" -> ui.ok("Player successfully added to team.");
 
-            case "TEAM_NOT_FOUND" -> warn("Team not found.");
+            case "TEAM_NOT_FOUND" -> ui.warn("Team not found.");
 
-            case "PLAYER_NOT_FOUND" -> warn("Player does not exist.");
+            case "PLAYER_NOT_FOUND" -> ui.warn("Player does not exist.");
 
-            case "ALREADY_MEMBER" -> warn("Player is already in this team.");
+            case "ALREADY_MEMBER" -> ui.warn("Player is already in this team.");
 
-            case "TEAM_FULL" -> warn("Team is full.");
+            case "TEAM_FULL" -> ui.warn("Team is full.");
 
-            case "SPORT_MISMATCH" -> warn("Cannot add player: sport does not match team.");
+            case "SPORT_MISMATCH" -> ui.warn("Cannot add player: sport does not match team.");
 
-            default -> warn("Unknown error occurred.");
+            default -> ui.warn("Unknown error occurred.");
         }
     }
 
-        static void captainRemovePlayer() {
+    static void captainRemovePlayer() {
 
-            System.out.print("  Team ID: ");
-            String teamId = sc.nextLine();
+        System.out.print("  Team ID: ");
+        String teamId = sc.nextLine();
 
-            Team team = teamService.getTeamByID(teamId);
+        String currentUserId = String.valueOf(loggedInPlayer.getPlayerId());
 
-            if (team == null) {
-                warn("Team not found.");
-                return;
-            }
+        System.out.print("  Player ID to remove: ");
+        String playerId = sc.nextLine();
 
-            String currentUserId = String.valueOf(loggedInPlayer.getPlayerId());
-
-            // Only captain allowed
-            if (!team.getCaptainID().equals(currentUserId)) {
-                warn("Only the team captain can remove players.");
-                return;
-            }
-
-            System.out.print("  Player ID to remove: ");
-            String playerId = sc.nextLine();
-
-            // Prevent removing yourself
-            if (playerId.equals(currentUserId)) {
-                warn("Captain cannot remove themselves.");
-                return;
-            }
-
-            boolean removed = team.removeMember(playerId);
-
-            if (removed) {
-                ok("Player removed from team.");
-            } else {
-                warn("Player not found in team.");
-            }
+        switch (teamService.removeMemberAsCaptain(teamId, currentUserId, playerId)) {
+            case TEAM_NOT_FOUND -> ui.warn("Team not found.");
+            case NOT_CAPTAIN -> ui.warn("Only the team captain can remove players.");
+            case CAPTAIN_CANNOT_REMOVE_SELF -> ui.warn("Captain cannot remove themselves.");
+            case PLAYER_NOT_IN_TEAM -> ui.warn("Player not found in team.");
+            case SUCCESS -> ui.ok("Player removed from team.");
         }
+    }
 
     static void viewMyTeams() {
 
@@ -603,7 +585,7 @@ public class Main {
             }
         }
 
-        if (!found) warn("You are not part of any teams.");
+        if (!found) ui.warn("You are not part of any teams.");
     }
 
     static String getPlayerName(String playerId) {
@@ -627,7 +609,7 @@ public class Main {
         Team team = teamService.getTeamByID(teamID);
 
         if (team == null) {
-            warn("Team not found.");
+            ui.warn("Team not found.");
             return;
         }
 
@@ -645,11 +627,11 @@ public class Main {
 
             GameSession s = gameSessionService.createSession(teamID, team.getSport(), date, time, venue);
 
-            if (s == null) warn("Session creation failed: cannot schedule sessions in the past");
-            else ok("Session created successfully");
+            if (s == null) ui.warn("Session creation failed: cannot schedule sessions in the past");
+            else ui.ok("Session created successfully");
 
         } catch (Exception e) {
-            warn("Invalid date format. Please use YYYY-MM-DD");
+            ui.warn("Invalid date format. Please use YYYY-MM-DD");
         }
     }
 
@@ -663,71 +645,32 @@ public class Main {
 
         String pid = String.valueOf(loggedInPlayer.getPlayerId());
 
-        Team team = teamService.getTeamByID(tid);
-
-        if (team == null) {
-            warn("Team not found: invalid or non-existent Team ID");
-            return;
+        switch (gameSessionService.bookSessionForTeamMember(sid, tid, pid)) {
+            case TEAM_NOT_FOUND -> ui.warn("Team not found: invalid or non-existent Team ID");
+            case NOT_TEAM_MEMBER -> ui.warn("Booking denied: You must be in the team to book");
+            case BOOKING_FAILED -> ui.warn("Booking failed: session may not exist or is unavailable");
+            case SUCCESS -> ui.ok("Booked successfully");
         }
-
-        if (!team.getMemberIDs().contains(pid)) {
-            warn("Booking denied: You must be in the team to book");
-            return;
-        }
-
-        Booking b = gameSessionService.bookSession(sid, tid);
-
-        if (b == null) warn("Booking failed: session may not exist or is unavailable");
-        else ok("Booked successfully");
     }
 
     static void cancelBooking() {
 
-        // Prompt user for booking ID
         System.out.print("  Booking ID: ");
         String bid = sc.nextLine();
 
-        // Retrieve booking
-        Booking booking = gameSessionService.getBookingByID(bid);
-
-        // Validate booking exists
-        if (booking == null) {
-            warn("Booking not found");
-            return;
-        }
-
-        // Retrieve team linked to booking
-        Team team = teamService.getTeamByID(booking.getTeamID());
-
-        // Validate team exists
-        if (team == null) {
-            warn("Team not found");
-            return;
-        }
-
-        // Get current player ID
         String pid = String.valueOf(loggedInPlayer.getPlayerId());
+        boolean isAdmin = loggedInAdmin != null;
 
-        // Admin can cancel any booking
-        if (loggedInAdmin != null) {
-            boolean ok = gameSessionService.cancelBooking(bid);
-            if (ok) ok("Booking cancelled by admin");
-            else warn("Cancel failed");
-            return;
+        switch (gameSessionService.cancelBookingAuthorized(bid, pid, isAdmin)) {
+            case BOOKING_NOT_FOUND -> ui.warn("Booking not found");
+            case TEAM_NOT_FOUND -> ui.warn("Team not found");
+            case NOT_CAPTAIN -> ui.warn("Only the team captain can cancel this booking");
+            case FAILED -> ui.warn("Cancel failed");
+            case SUCCESS -> {
+                if (isAdmin) ui.ok("Booking cancelled by admin");
+                else ui.ok("Booking cancelled");
+            }
         }
-
-        // Only team captain is allowed to cancel
-        if (!team.getCaptainID().equals(pid)) {
-            warn("Only the team captain can cancel this booking");
-            return;
-        }
-
-        // Proceed with cancellation
-        boolean ok = gameSessionService.cancelBooking(bid);
-
-        // Show result
-        if (ok) ok("Booking cancelled");
-        else warn("Cancel failed");
     }
 
     static void viewBookings() {
@@ -738,8 +681,8 @@ public class Main {
         List<Booking> bookings = gameSessionService.getBookingsByTeam(teamId);
 
         if (bookings.isEmpty()) {
-            warn("No bookings found for this team.");
-            pause();
+            ui.warn("No bookings found for this team.");
+            ui.pause();
             return;
         }
 
@@ -753,7 +696,7 @@ public class Main {
             System.out.println("------------------------");
         }
 
-        pause();
+        ui.pause();
     }
 
     // =====================================================
@@ -763,7 +706,7 @@ public class Main {
 
         while (true) {
 
-            printHeader("MANAGE TEAMS");
+            ui.printHeader("MANAGE TEAMS");
 
             System.out.println("  1. View Teams");
             System.out.println("  2. Delete Team");
@@ -771,12 +714,12 @@ public class Main {
             System.out.println("  0. Back");
             System.out.print("\n  Choice: ");
 
-            switch (readInt()) {
-                case 1 -> { viewTeams(); pause(); }
-                case 2 -> { deleteTeam(); pause(); }
-                case 3 -> { removePlayerFromTeam(); pause(); }
+            switch (ui.readInt()) {
+                case 1 -> { viewTeams(); ui.pause(); }
+                case 2 -> { deleteTeam(); ui.pause(); }
+                case 3 -> { removePlayerFromTeam(); ui.pause(); }
                 case 0 -> { return; }
-                default -> warn("Invalid option");
+                default -> ui.warn("Invalid option");
             }
         }
     }
@@ -789,7 +732,7 @@ public class Main {
         Team team = teamService.getTeamByID(id);
 
         if (team == null) {
-            warn("Team not found.");
+            ui.warn("Team not found.");
             return;
         }
 
@@ -797,16 +740,16 @@ public class Main {
         String confirm = sc.nextLine().trim().toLowerCase();
 
         if (!confirm.equals("yes")) {
-            warn("Delete cancelled.");
+            ui.warn("Delete cancelled.");
             return;
         }
 
-        boolean ok = teamService.deleteTeam(id);
+        boolean deleted = teamService.deleteTeam(id);
 
-        if (ok) {
-            ok("Team deleted successfully.");
+        if (deleted) {
+            ui.ok("Team deleted successfully.");
         } else {
-            warn("Delete failed.");
+            ui.warn("Delete failed.");
         }
     }
 
@@ -818,7 +761,7 @@ public class Main {
         Team team = teamService.getTeamByID(t);
 
         if (team == null) {
-            warn("Team not found.");
+            ui.warn("Team not found.");
             return;
         }
 
@@ -826,16 +769,16 @@ public class Main {
         String p = sc.nextLine();
 
         if (!team.getMemberIDs().contains(p)) {
-            warn("Player is not in this team.");
+            ui.warn("Player is not in this team.");
             return;
         }
 
-        boolean removed = team.removeMember(p);
+        boolean removed = teamService.removeMemberAsAdmin(t, p);
 
         if (removed) {
-            ok("Player successfully removed from team.");
+            ui.ok("Player successfully removed from team.");
         } else {
-            warn("Removal failed due to system error (Player is the captain).");
+            ui.warn("Removal failed due to system error (Player is the captain).");
         }
     }
 
@@ -843,7 +786,7 @@ public class Main {
 
         List<GameSession> sessions = gameSessionService.getAllSessions();
 
-        if (adminEmpty(sessions, "No sessions available.")) return;
+        if (ui.adminEmpty(sessions, "No sessions available.")) return;
 
         for (GameSession s : sessions) {
             System.out.println("\n  Session ID  : " + s.getSessionID());
@@ -851,24 +794,15 @@ public class Main {
             System.out.println("  Date        : " + s.getDate());
             System.out.println("  Time        : " + s.getTime());
             System.out.println("  Venue       : " + s.getVenue());
-            System.out.println("  Status      : " + formatStatus(s.getStatus()));
+            System.out.println("  Status      : " + ui.formatStatus(s.getStatus()));
         }
-    }
-
-
-    static String formatStatus(GameSession.SessionStatus status) {
-        return switch (status) {
-            case SCHEDULED -> "  SCHEDULED";
-            case COMPLETED -> "  COMPLETED";
-            case CANCELLED -> "  CANCELLED";
-        };
     }
 
     static void manageGameSessionsAdmin() {
 
         while (true) {
 
-            printHeader("MANAGE GAME SESSIONS");
+            ui.printHeader("MANAGE GAME SESSIONS");
 
             System.out.println("  1. View All Sessions");
             System.out.println("  2. Cancel Session");
@@ -876,12 +810,12 @@ public class Main {
             System.out.println("  0. Back");
             System.out.print("\n  Choice: ");
 
-            switch (readInt()) {
+            switch (ui.readInt()) {
                 case 1 -> viewAllSessionsAdmin();
                 case 2 -> cancelSession();
                 case 3 -> completeSession();
                 case 0 -> { return; }
-                default -> warn("Invalid option");
+                default -> ui.warn("Invalid option");
             }
         }
     }
@@ -891,27 +825,11 @@ public class Main {
         System.out.print("  Session ID: ");
         String id = sc.nextLine();
 
-        GameSession s = gameSessionService.getSessionByID(id);
-
-        if (s == null) {
-            warn("Session not found.");
-            return;
+        switch (gameSessionService.cancelSessionAndRelatedBookings(id)) {
+            case NOT_FOUND -> ui.warn("Session not found.");
+            case ALREADY_CANCELLED -> ui.warn("Session is already cancelled.");
+            case SUCCESS -> ui.ok("Session cancelled and related bookings updated.");
         }
-
-        if (s.getStatus() == GameSession.SessionStatus.CANCELLED) {
-            warn("Session is already cancelled.");
-            return;
-        }
-
-        s.cancel();
-
-        for (Booking b : gameSessionService.getBookingsByTeam(s.getTeamID())) {
-            if (b.getSessionID().equals(id)) {
-                b.cancelBooking();
-            }
-        }
-
-        ok("Session cancelled and related bookings updated.");
     }   
 
     static void completeSession() {
@@ -919,128 +837,15 @@ public class Main {
         System.out.print("  Session ID: ");
         String id = sc.nextLine();
 
-        GameSession s = gameSessionService.getSessionByID(id);
-
-        if (s == null) {
-            warn("Session not found.");
-            return;
+        switch (gameSessionService.completeSessionValidated(id)) {
+            case NOT_FOUND -> ui.warn("Session not found.");
+            case ALREADY_CANCELLED -> ui.warn("Cannot complete a cancelled session.");
+            case ALREADY_COMPLETED -> ui.warn("Session is already completed.");
+            case SUCCESS -> ui.ok("Session marked as completed.");
         }
-
-        if (s.getStatus() == GameSession.SessionStatus.CANCELLED) {
-            warn("Cannot complete a cancelled session.");
-            return;
-        }
-
-        if (s.getStatus() == GameSession.SessionStatus.COMPLETED) {
-            warn("Session is already completed.");
-            return;
-        }
-
-        s.markCompleted();
-
-        ok("Session marked as completed.");
-    }
-    
-    // =====================================================
-    // UTIL
-    // =====================================================
-    static void printBanner() {
-        System.out.println();
-        System.out.println("  ╔══════════════════════════════╗");
-        System.out.println("  ║      SportConnect  v1.0      ║");
-        System.out.println("  ╚══════════════════════════════╝");
-        System.out.println();
-    }
-
-    static void printHeader(String title) {
-        System.out.println();
-        System.out.println("  ── " + title + " " + "─".repeat(Math.max(0, 34 - title.length())));
-        System.out.println();
-    }
-
-    static void printPlayerList(List<Player> list) {
-        if (list.isEmpty()) {
-            System.out.println("  No players found.");
-        } else {
-            System.out.printf("  %-4s  %-20s  %-12s  %-14s  %-12s  %s%n",
-                "ID", "Name", "Sport", "Skill", "City", "Rating");
-            System.out.println("  " + "─".repeat(74));
-            for (Player p : list) {
-                System.out.printf("  %-4d  %-20s  %-12s  %-14s  %-12s  %.1f  %s%n",
-                    p.getPlayerId(),
-                    cut(p.getName(),        20),
-                    cut(p.getSport(),       12),
-                    cut(p.getSkill_level(), 14),
-                    cut(p.getCity(),        12),
-                    p.getRating(),
-                    p.isActive() ? "" : "[inactive]");
-            }
-            System.out.println("\n  " + list.size() + " player(s) found.");
-        }
-        pause();
-    }
-
-    static void ok(String msg)   { System.out.println("\n  [OK] " + msg + "\n"); }
-    static void warn(String msg) { System.out.println("\n  [!]  " + msg + "\n"); }
-    static void stub(String msg) { warn("Not yet integrated: " + msg); }
-
-    static void pause() {
-        System.out.print("\n  Press Enter to continue...");
-        sc.nextLine();
-    }
-
-    static String cut(String s, int max) {
-        if (s == null) return "";
-        return s.length() <= max ? s : s.substring(0, max - 1) + "…";
-    }
-
-    static int readInt() {
-        try {
-            String line = sc.nextLine().trim();
-            if (line.isEmpty()) return -1;
-            return Integer.parseInt(line);
-        } catch (Exception e) {
-            return -1;
-        }
-    }
-    static int readIntInline() {
-        try { return Integer.parseInt(sc.nextLine().trim()); }
-        catch (NumberFormatException e) { return 0; }
     }
 
     static String generateSessionToken(String id, String type) {
         return type + "_" + id + "_" + System.currentTimeMillis();
-    }
-
-    static boolean adminEmpty(List<?> list, String message) {
-        if (list == null || list.isEmpty()) {
-            warn(message);
-            return true;
-        }
-        return false;
-    }
-
-    static void seedData() {
-        authService.registerAdmin("admin", "admin123",
-                                  "admin@sportconnect.com", "System Admin");
-        authService.registerSuperAdmin("superadmin", "super123",
-                                       "super@sportconnect.com", "Super Admin");
-        addDemo("Lien Tran",      "lien@demo.com",      "647-111-2222", "Cricket",    "BEGINNER",     "Toronto",     21, 2);
-        addDemo("Brian Carter",   "brian@demo.com",     "905-222-3333", "Cricket",    "ADVANCED",     "Brampton",    24, 5);
-        addDemo("Shahshree Das",  "shahshree@demo.com", "416-333-4444", "Cricket",    "INTERMEDIATE", "Mississauga", 22, 3);
-        addDemo("Hassana Diallo", "hassana@demo.com",   "647-444-5555", "Volleyball", "BEGINNER",     "Toronto",     20, 1);
-        addDemo("Pooja Mehta",    "pooja@demo.com",     "905-555-6666", "Cricket",    "ADVANCED",     "Brampton",    26, 6);
-        addDemo("Riddhi Shah",    "riddhi@demo.com",    "416-666-7777", "Soccer",     "INTERMEDIATE", "Mississauga", 23, 4);
-    }
-
-    static void addDemo(String name, String email, String phone,
-                        String sport, String skill, String city, int age, int exp) {
-        Player p = authService.registerPlayer(email, name, phone, sport);
-        p.setPasswordHash("demo123");
-        p.setSkill_level(skill);
-        p.setCity(city);
-        p.setAge(age);
-        p.setExperience(exp);
-        playerService.addPlayer(p);
     }
 }
