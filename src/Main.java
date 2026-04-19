@@ -9,6 +9,8 @@ import service.ChatService;
 import service.FriendRequestService;
 import service.GameSessionService;
 import service.PlayerService;
+import service.RatingService;
+import service.PaymentService;
 import service.SignupPersistenceService;
 import service.TeamService;
 
@@ -27,6 +29,8 @@ static final FriendRequestService friendRequestService = new FriendRequestServic
 static final ChatService chatService = new ChatService();
 static final TeamService teamService = new TeamService(playerService);
 static final GameSessionService gameSessionService = new GameSessionService(teamService);
+static final RatingService ratingService = new RatingService();
+static final PaymentService paymentService = new PaymentService();
 static final SignupPersistenceService signupStore = new SignupPersistenceService();
 
 static Player loggedInPlayer = null;
@@ -150,8 +154,8 @@ static void playerMenu() {
             case 4 -> openChatModule();
             case 5 -> manageTeamMenu();
             case 6 -> manageSessionMenu();
-            case 7 -> workingOnModule("Rate a Player");
-            case 8 -> workingOnModule("Make Payment");
+            case 7 -> ratePlayerModule();
+            case 8 -> paymentService.makePayment(loggedInPlayer, "MANUAL", sc);
             case 9 -> { logout(); return; }
             default -> warn("Invalid option.");
         }
@@ -313,7 +317,34 @@ static void markSessionCompletedModule() {
         case GameSessionService.R_COMPLETE_NOT_FOUND -> warn("Session not found.");
         case GameSessionService.R_COMPLETE_ALREADY_CANCELLED -> warn("Cannot complete a cancelled session.");
         case GameSessionService.R_COMPLETE_ALREADY_COMPLETED -> warn("Session already completed.");
-        case GameSessionService.R_COMPLETE_SUCCESS -> System.out.println("\n[OK] Session marked completed.\n");
+        case GameSessionService.R_COMPLETE_SUCCESS -> {
+            System.out.println("\n[OK] Session marked completed.\n");
+            System.out.print("Rate a player from this session? (y/n): ");
+            if (sc.nextLine().trim().equalsIgnoreCase("y")) {
+                List<Player> players = playerService.getAllActivePlayers().stream()
+                    .filter(p -> !p.getPlayerId().equals(loggedInPlayer.getPlayerId()))
+                    .collect(Collectors.toList());
+                System.out.println("Players:");
+                for (Player p : players) {
+                    System.out.printf("  ID=%d | %s | avg rating=%.1f%n",
+                        p.getPlayerId(), p.getName(), ratingService.getAverageRatingById(p.getPlayerId()));
+                }
+                System.out.print("Enter Player ID to rate (0 to cancel): ");
+                int ratedId = readIntInline();
+                if (ratedId != 0) {
+                    try {
+                        Player rated = playerService.getPlayerById((long) ratedId);
+                        float stars = ratingService.readStars(sc);
+                        System.out.print("Comment: ");
+                        String comment = sc.nextLine().trim();
+                        ratingService.addRating(loggedInPlayer, rated, sessionId, stars, comment);
+                        System.out.println("\n[OK] Rating submitted!\n");
+                    } catch (Exception e) {
+                        warn(e.getMessage());
+                    }
+                }
+            }
+        }
         default -> warn("Unknown error.");
     }
 
@@ -647,6 +678,42 @@ static void updatePlayerProfile() {
     pause();
 }
 
+static void ratePlayerModule() {
+    printHeader("Rate a Player");
+
+    List<Player> players = playerService.getAllActivePlayers().stream()
+        .filter(p -> !p.getPlayerId().equals(loggedInPlayer.getPlayerId()))
+        .collect(Collectors.toList());
+
+    if (players.isEmpty()) {
+        System.out.println("No players available to rate.");
+        pause();
+        return;
+    }
+
+    System.out.println("Players:");
+    for (Player p : players) {
+        System.out.printf("  ID=%d | %s | avg rating=%.1f%n",
+            p.getPlayerId(), p.getName(), ratingService.getAverageRatingById(p.getPlayerId()));
+    }
+
+    System.out.print("\nEnter Player ID to rate (0 to cancel): ");
+    int ratedId = readIntInline();
+    if (ratedId == 0) return;
+
+    try {
+        Player rated = playerService.getPlayerById((long) ratedId);
+        float stars = ratingService.readStars(sc);
+        System.out.print("Comment: ");
+        String comment = sc.nextLine().trim();
+        ratingService.addRating(loggedInPlayer, rated, "MANUAL", stars, comment);
+        System.out.println("\n[OK] Rating submitted!\n");
+    } catch (Exception e) {
+        warn(e.getMessage());
+    }
+    pause();
+}
+
 static void workingOnModule(String moduleName) {
     printHeader(moduleName);
     System.out.println("Working on this module...");
@@ -915,12 +982,14 @@ static void superAdminMenu() {
         System.out.println("  1. List Players");
         System.out.println("  2. Delete Player");
         System.out.println("  3. View persisted signups (decrypted file)");
+        System.out.println("  4. View Payment Records");
         System.out.println("  0. Logout");
 
         switch (readInt()) {
             case 1 -> listPlayers();
             case 2 -> deletePlayer();
             case 3 -> viewPersistedSignupsAdmin();
+            case 4 -> paymentService.viewPaymentsAsAdmin(loggedInAdmin.getPasswordHash(), sc);
             case 0 -> { logout(); return; }
         }
     }

@@ -1,9 +1,8 @@
 package enums;
 
 public enum PaymentMethod {
-    card,
-    wallet,
-    cash,
-    applePay,
-    googlePay
+    CARD,
+    PAYPAL,
+    APPLE_WALLET,
+    GOOGLE_WALLET
 }
