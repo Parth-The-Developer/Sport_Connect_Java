@@ -1,0 +1,10 @@
+type,username_or_email,password,name,email,phone,sport,skill_level,city,age,experience,role
+ADMIN,admin,admin123,Admin,admin@mail.com,,,,,,,ADMIN
+SUPER_ADMIN,superadmin,super123,Super,super@mail.com,,,,,,,SUPER_ADMIN
+PLAYER,user@mail.com,123,Parth,user@mail.com,999,cricket,INTERMEDIATE,Toronto,22,3,
+PLAYER,lien@demo.com,demo123,Lien Tran,lien@demo.com,647-111-2222,cricket,BEGINNER,Toronto,21,2,
+PLAYER,brian@demo.com,demo123,Brian Carter,brian@demo.com,905-222-3333,cricket,ADVANCED,Brampton,24,5,
+PLAYER,shahshree@demo.com,demo123,Shahshree Das,shahshree@demo.com,416-333-4444,cricket,INTERMEDIATE,Mississauga,22,3,
+PLAYER,hassana@demo.com,demo123,Hassana Diallo,hassana@demo.com,647-444-5555,volleyball,BEGINNER,Toronto,20,1,
+PLAYER,pooja@demo.com,demo123,Pooja Mehta,pooja@demo.com,905-555-6666,cricket,ADVANCED,Brampton,26,6,
+PLAYER,riddhi@demo.com,demo123,Riddhi Shah,riddhi@demo.com,416-666-7777,soccer,INTERMEDIATE,Mississauga,23,4,
