@@ -10,11 +10,18 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+
+// export SENDER_EMAIL="tp025060@gmail.com"
+// export APP_PASSWORD="qxie ndwa czuo ygsp"
+
 public class EmailService {
     private static final String SMTP_HOST = "smtp.gmail.com";
     private static final int SMTP_SSL_PORT = 465;
     private static final String SMTP_SENDER_EMAIL_KEY = "SMTP_SENDER_EMAIL";
     private static final String SMTP_APP_PASSWORD_KEY = "SMTP_APP_PASSWORD";
+    /** Short aliases (e.g. {@code export SENDER_EMAIL=...} / {@code export APP_PASSWORD=...}). */
+    private static final String ALT_SENDER_EMAIL_KEY = "SENDER_EMAIL";
+    private static final String ALT_APP_PASSWORD_KEY = "APP_PASSWORD";
 
     public boolean sendFriendRequestEmail(String toEmail, String toName, String fromName) {
         String subject = "New friend request on SportConnect";
@@ -63,9 +70,30 @@ public class EmailService {
         return !isBlank(email) && email.contains("@") && email.contains(".");
     }
 
-    private String readEnv(String key) {
+    /**
+     * Reads credentials from the OS environment first, then JVM system properties
+     * (so you can run: {@code java -DSMTP_SENDER_EMAIL=you@gmail.com -DSMTP_APP_PASSWORD=xxxx Main}).
+     */
+    private String readCredential(String key) {
         String value = System.getenv(key);
-        return value != null ? value.trim() : null;
+        if (!isBlank(value)) return value.trim();
+        value = System.getProperty(key);
+        return isBlank(value) ? null : value.trim();
+    }
+
+    /** Tries keys in order (env, then system property for each key). */
+    private String readFirstCredential(String... keys) {
+        for (String key : keys) {
+            String v = readCredential(key);
+            if (!isBlank(v)) return v;
+        }
+        return null;
+    }
+
+    /** Gmail app passwords are 16 characters; spaces are display-only. */
+    private String normalizeAppPassword(String raw) {
+        if (raw == null) return null;
+        return raw.replaceAll("\\s+", "");
     }
 
     private boolean isBlank(String s) {
@@ -77,10 +105,14 @@ public class EmailService {
     }
 
     private SmtpCredentials loadSmtpCredentials() {
-        String smtpEmail = readEnv(SMTP_SENDER_EMAIL_KEY);
-        String smtpPassword = readEnv(SMTP_APP_PASSWORD_KEY);
+        String smtpEmail = readFirstCredential(SMTP_SENDER_EMAIL_KEY, ALT_SENDER_EMAIL_KEY);
+        String smtpPassword = normalizeAppPassword(
+            readFirstCredential(SMTP_APP_PASSWORD_KEY, ALT_APP_PASSWORD_KEY));
         if (isBlank(smtpEmail) || isBlank(smtpPassword)) {
-            System.out.println("[Email] Skipped: set " + SMTP_SENDER_EMAIL_KEY + " and " + SMTP_APP_PASSWORD_KEY + ".");
+            System.out.println("[Email] Skipped: set "
+                + SMTP_SENDER_EMAIL_KEY + " / " + ALT_SENDER_EMAIL_KEY + " and "
+                + SMTP_APP_PASSWORD_KEY + " / " + ALT_APP_PASSWORD_KEY
+                + " (Gmail: App Password, not your normal login password).");
             return null;
         }
         return new SmtpCredentials(smtpEmail, smtpPassword);

@@ -135,6 +135,14 @@ public class AuthService {
         return playerRepo.containsKey(email.toLowerCase());
     }
 
+    /** Restores a player from disk into the login map (skips if email already present). */
+    public void restoreRegisteredPlayer(Player player) {
+        if (player == null || !isSet(player.getEmail())) return;
+        String key = player.getEmail().toLowerCase();
+        if (playerRepo.containsKey(key)) return;
+        playerRepo.put(key, player);
+    }
+
     // ── Password change ───────────────────────────────────────────────────────
 
     public void updateAdminPassword(String username, String oldPwd, String newPwd) {
