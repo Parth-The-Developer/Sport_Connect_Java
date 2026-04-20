@@ -273,7 +273,7 @@ Target: `feature/YOUR-BRANCH-NAME` → `develop`
 
 ---
 
-## Commit Message Format
+## Commit Message Formats
 
 | Prefix | When to use |
 |--------|-------------|
