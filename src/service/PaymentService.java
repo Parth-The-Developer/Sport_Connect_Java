@@ -23,9 +23,11 @@ public class PaymentService {
     private int idCounter = 1;
     private static final String CSV_FILE        = "data/payments.csv";
     private static final String POSTAL_CSV_FILE = "data/player_postal_codes.csv";
+    private final EmailService emailService     = new EmailService();
 
     public PaymentService() {
         loadPostalCodes();
+        loadLastIdFromCSV();
     }
 
     // Main entry point called from Main.java
@@ -153,6 +155,10 @@ public class PaymentService {
         System.out.println("\n[OK] Card payment of $" + amount + " successful!\n");
         printReceipt(payment);
         saveToCSV();
+        emailService.sendPaymentConfirmationEmail(
+            player.getEmail(), player.getName(),
+            payment.getPaymentID(), amount, "Card", sessionID
+        );
     }
 
     // ── Apple Wallet ──────────────────────────────────────────────────────────
@@ -169,6 +175,10 @@ public class PaymentService {
         System.out.println("\n[OK] Apple Wallet payment of $" + amount + " successful!\n");
         printReceipt(payment);
         saveToCSV();
+        emailService.sendPaymentConfirmationEmail(
+            player.getEmail(), player.getName(),
+            payment.getPaymentID(), amount, "Apple Wallet", sessionID
+        );
     }
 
     // ── Google Wallet ─────────────────────────────────────────────────────────
@@ -185,6 +195,10 @@ public class PaymentService {
         System.out.println("\n[OK] Google Wallet payment of $" + amount + " successful!\n");
         printReceipt(payment);
         saveToCSV();
+        emailService.sendPaymentConfirmationEmail(
+            player.getEmail(), player.getName(),
+            payment.getPaymentID(), amount, "Google Wallet", sessionID
+        );
     }
 
     // ── PayPal ────────────────────────────────────────────────────────────────
@@ -208,6 +222,10 @@ public class PaymentService {
         System.out.println("\n[OK] PayPal payment of $" + amount + " successful!\n");
         printReceipt(payment);
         saveToCSV();
+        emailService.sendPaymentConfirmationEmail(
+            player.getEmail(), player.getName(),
+            payment.getPaymentID(), amount, "PayPal", sessionID
+        );
     }
 
     // ── Card validation helpers ───────────────────────────────────────────────
@@ -347,25 +365,60 @@ public class PaymentService {
         System.out.println("  ---------------");
     }
 
+    private void loadLastIdFromCSV() {
+        try {
+            java.io.File file = new java.io.File(CSV_FILE);
+            if (!file.exists()) return;
+
+            BufferedReader reader = new BufferedReader(new FileReader(CSV_FILE));
+            String line;
+            String lastLine = null;
+            while ((line = reader.readLine()) != null) {
+                if (!line.isBlank() && !line.startsWith("paymentID")) {
+                    lastLine = line;
+                }
+            }
+            reader.close();
+
+            if (lastLine != null) {
+                String[] parts = lastLine.split(",");
+                String lastID = parts[0].trim();
+                int lastNum = Integer.parseInt(lastID.replace("PAY-", ""));
+                idCounter = lastNum + 1;
+            }
+        } catch (Exception e) {
+            idCounter = 1;
+        }
+    }
+
     private void saveToCSV() {
         try {
             new java.io.File("data").mkdirs();
-            FileWriter writer = new FileWriter(CSV_FILE);
-            writer.write("paymentID,playerID,playerName,sessionID,amount,method,postalCode,status\n");
-            for (Payment p : payments) {
-                writer.write(
-                    p.getPaymentID()  + "," +
-                    p.getPlayerID()   + "," +
-                    p.getPlayerName() + "," +
-                    p.getSessionID()  + "," +
-                    p.getAmount()     + "," +
-                    p.getMethod()     + "," +
-                    p.getPostalCode() + "," +
-                    p.getStatus()     + "\n"
-                );
+            boolean fileExists = new java.io.File(CSV_FILE).exists();
+
+            FileWriter writer = new FileWriter(CSV_FILE, true); // append mode
+
+            // Only write header if file is new
+            if (!fileExists) {
+                writer.write("paymentID,playerID,playerName,sessionID,amount,method,postalCode,status\n");
             }
+
+            // Only write the latest payment
+            Payment p = payments.get(payments.size() - 1);
+            writer.write(
+                p.getPaymentID()  + "," +
+                p.getPlayerID()   + "," +
+                p.getPlayerName() + "," +
+                p.getSessionID()  + "," +
+                p.getAmount()     + "," +
+                p.getMethod()     + "," +
+                p.getPostalCode() + "," +
+                p.getStatus()     + "\n"
+            );
+
             writer.close();
             System.out.println("Payment saved to " + CSV_FILE);
+
         } catch (IOException e) {
             System.out.println("Could not save payment: " + e.getMessage());
         }
