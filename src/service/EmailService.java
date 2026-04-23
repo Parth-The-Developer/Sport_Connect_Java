@@ -12,7 +12,7 @@ import java.util.Base64;
 
 
 // export SENDER_EMAIL="tp025060@gmail.com"
-// export APP_PASSWORD="qxie ndwa czuo ygsp"
+// export APP_PASSWORD="qxiendwaczuoygsp"
 
 public class EmailService {
     private static final String SMTP_HOST = "smtp.gmail.com";
