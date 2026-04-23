@@ -1,0 +1,3 @@
+# Compiled bytecode (keep sources only in repo)
+*.class
+**/src/**/*.class
