@@ -3,6 +3,35 @@
 A collaborative Java application built by a team of four, implementing player authentication, social features, team/game session management, and a rating/payment system.
 
 ---
+## Getting Started
+
+### Clone the repo
+
+```bash
+git clone https://github.com/Parth-The-Developer/Sport_Connect_Java.git
+cd Sport_Connect_Java
+```
+---
+
+## How to Compile and Run
+
+**Compile:**
+```bash
+javac -d bin src/enums/*.java src/model/*.java src/service/*.java src/Main.java
+```
+
+**Run:**
+```bash
+java -cp bin Main
+```
+
+### Create your feature branch for contribution
+
+```bash
+git checkout develop
+git pull origin develop
+git checkout -b feature/YOUR-BRANCH-NAME
+```
 
 ## Team & Branch Assignments
 
@@ -60,20 +89,6 @@ Sport_Connect_Java/
 ├── bin/
 ├── README.md
 └── .gitignore
-```
-
----
-
-## How to Compile and Run
-
-**Compile:**
-```bash
-javac -d bin src/enums/*.java src/model/*.java src/service/*.java src/Main.java
-```
-
-**Run:**
-```bash
-java -cp bin Main
 ```
 
 ---
@@ -231,23 +246,6 @@ main          ← submission-ready code only (final PR at end)
 - **`feature/…`** — your personal branch. Experiment freely; open a Pull Request when ready to merge.
 
 ---
-
-## Getting Started
-
-### Clone the repo
-
-```bash
-git clone https://github.com/Parth-The-Developer/Sport_Connect_Java.git
-cd Sport_Connect_Java
-```
-
-### Create your feature branch
-
-```bash
-git checkout develop
-git pull origin develop
-git checkout -b feature/YOUR-BRANCH-NAME
-```
 
 ---
 
