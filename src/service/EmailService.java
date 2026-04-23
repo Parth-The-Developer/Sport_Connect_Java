@@ -40,6 +40,24 @@ public class EmailService {
             + "- SportConnect";
         return sendEmail(toEmail, subject, body, "acceptance notification");
     }
+    // Dhruv - added method to send payment confirmation email after successful payment
+
+    public boolean sendPaymentConfirmationEmail(String toEmail, String toName,
+                                                String paymentID, double amount,
+                                                String method, String sessionID) {
+        String subject = "Payment Confirmation - SportConnect";
+        String body = "Hi " + safe(toName) + ",\n\n"
+            + "Your payment was successful. Here are your details:\n\n"
+            + "  Payment ID : " + paymentID + "\n"
+            + "  Amount     : $" + amount + "\n"
+            + "  Method     : " + method + "\n"
+            + "  Session    : " + sessionID + "\n\n"
+            + "Thank you for using SportConnect!\n\n"
+            + "- SportConnect";
+        return sendEmail(toEmail, subject, body, "payment confirmation");
+    }
+    // completed method to send payment confirmation email after successful payment. Dhurv
+    
 
     private boolean sendEmail(String toEmail, String subject, String body, String emailType) {
         SmtpCredentials credentials = loadSmtpCredentials();
